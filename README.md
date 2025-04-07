@@ -1,3 +1,5 @@
+![clayPlotter Logo](clayPlotter.png)
+
 # 🗺️ clayPlotter: Modern Python Choropleth Mapping
 
 Welcome to `clayPlotter`! 👋 This project is a modern, installable Python package 📦 for creating beautiful choropleth maps 🎨. It efficiently downloads geospatial data once and caches it for future use, making it easy to generate maps for different regions.
