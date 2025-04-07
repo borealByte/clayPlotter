@@ -9,3 +9,4 @@ __pycache__/
 
 # Ignore the .roomodes file
 .roomodes
+*.egg-info/
