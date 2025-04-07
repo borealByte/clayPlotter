@@ -6,6 +6,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+build/
+.pytest_cach/
 
 # Ignore the .roomodes file
 .roomodes

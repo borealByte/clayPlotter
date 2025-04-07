@@ -28,7 +28,7 @@ inset_level1_regions:
       width: "15%"
       height: "15%"
       loc: 'lower left'
-      bbox_to_anchor: [0.2, 0.0, 1, 1] # Offset slightly from AK
+      bbox_to_anchor: [0.25, 0.0, 1, 1] # Offset slightly more from AK
       bbox_transform: 'ax.transAxes'
       borderpad: 0
     xlim: [-160.5, -154.5]
@@ -38,7 +38,8 @@ inset_level1_regions:
 # --- Main Map View Settings ---
 main_map_settings:
   xlim: [-130, -65]
-  ylim: [24, 50]
+  ylim: [24, 50]   # Reverted northern limit
+  target_crs: 'EPSG:5070' # Added projection for CONUS Albers
   include_lakes: true # Plot lakes on the main map
   include_neighboring_countries: true # Plot neighboring countries (e.g., CA, MX)
   include_neighboring_level1: true # Plot neighboring L1 regions (e.g., Canadian provinces)
@@ -46,12 +47,12 @@ main_map_settings:
 
 # --- Styling ---
 styling:
-  cmap: 'RdYlGn' # Default colormap for data values (Red-Yellow-Green)
+  cmap: 'YlOrRd' # Default colormap for data values (using viridis)
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
-  lake_edge_color: 'darkblue'
+  lake_edge_color: 'darkgrey'
   lake_linewidth: 0.3
-  level1_edge_color: 'black'
+  level1_edge_color: 'darkgrey' # Softer border color
   level1_linewidth: 0.5
   country_color: 'lightgrey' # Fill color for neighboring countries
   country_edge_color: 'darkgrey'
@@ -60,9 +61,6 @@ styling:
   neighbor_l1_linewidth: 0.5
   neighbor_l1_linestyle: '--'
   neighbor_l1_fill_color: 'lightgrey' # Fill color for neighboring L1 regions
-  colorbar_orientation: 'vertical'
-  colorbar_fraction: 0.03
-  colorbar_pad: 0.02
   ocean_color: 'aliceblue' # Background color for the axes (ocean)
 
 # --- Label Settings ---
@@ -72,64 +70,52 @@ label_settings:
   value_format: "{:.0f}" # Format string for the value part of the label (e.g., "{:.0f}" for integer)
   label_format: "{code} - {value}" # Format string for the full label text
   na_value_text: "N/A" # Text to display if value is missing
-  label_fontsize: 7
+  label_fontsize: 6 # Slightly smaller labels
   annotation_fontsize: 6
   label_bbox_style: # Settings for matplotlib.text.Text.set_bbox
     boxstyle: "round,pad=0.1"
     fc: "white"
     ec: "none"
-    alpha: 0.6
+    alpha: 0.7 # Semi-transparent label background
   annotation_bbox_style: # Settings for annotation bbox
     boxstyle: "round,pad=0.1"
     fc: "white"
     ec: "none"
-    alpha: 0.7
+    alpha: 0.7 # Semi-transparent annotation background
   annotation_arrowprops: # Settings for annotation arrow
     arrowstyle: "-"
     color: 'gray'
     lw: 0.5
 
-  # L1 codes requiring offset labels (annotations)
-  small_regions:
-    - 'RI'
-    - 'DC'
-    - 'DE'
-    - 'CT'
-    - 'NJ'
-    - 'VT'
-    - 'NH'
-    - 'MD'
-    # - 'HI' # Handled separately in inset logic
-    - 'MA' # Included here as per original code logic, though plotted directly
-
+  # L1 codes requiring offset labels (annotations) are defined solely by the keys in 'offsets' below
   # Offsets for small_regions (mapping L1 code to [lon_offset, lat_offset])
   offsets:
-    'RI': [2.6, 0.0]
-    'CT': [2.0, -0.8]
-    'NJ': [1.8, -1.2]
-    'DE': [1.5, -1.0]
-    'MD': [1.2, -1.8]
-    'DC': [1.0, -3.5]
-    'VT': [-0.5, 1.6]
-    'NH': [1.5, -0.7]
-    'MA': [2.0, 0.0] # Included here as per original code logic
+    'RI': [260000, -20000]      
+    'CT': [200000, -80000] 
+    'NJ': [180000, -60000]
+    'MD': [270000, -200000]
+    'DC': [300000, -350000]
+    'VT': [-50000, 160000] 
+    'NH': [180000, -90000] 
+    'MA': [250000, 10000]    
+    'DE': [250000, -50000]      
 
   # L1 codes requiring label placement within a clipped portion of their geometry
   # Format: 'L1_CODE': ['clip_side', clip_percentage]
   # clip_side can be 'top', 'bottom', 'left', 'right'
   clipped_regions:
     'ID': ['bottom', 0.5]
-    'KY': ['bottom', 0.5]
+    'KY': ['bottom', 0.7]
     'MI': ['bottom', 0.35]
-    'VA': ['bottom', 0.35]
-    'MA': ['top', 0.5] # Note: MA is also in small_regions/offsets in original code, might need adjustment
-    'NC': ['top', 0.5]
+    'VA': ['right', 0.45]
+    'NC': ['top', 0.8]
     'NV': ['top', 0.5]
     'PA': ['bottom', 0.8]
     'MT': ['top', 0.9]
     'LA': ['bottom', 0.7]
     # 'AK': ['top', 0.5] # Handled separately
     'SD': ['top', 0.9]
+    'NY': ['right', 0.6]
 
   # Special handling for specific inset labels
   inset_label_handling:
@@ -145,7 +131,7 @@ label_settings:
 
 # --- Figure Settings ---
 figure:
-  figsize: [15, 10]
+  figsize: [18, 10] # Wider figure aspect ratio
   title: 'Level 1 Admin Choropleth' # Generic title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 

@@ -33,18 +33,38 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
   - [x] Implement core logic (`_prepare_data`, `plot`) in `ChoroplethPlotter`.
   - [x] Ensure tests pass for core logic implementation.
 - [ ] Keep files under ~350 lines (break down if needed).
-- [ ] Commit changes following the agreed workflow (diff summary, plan update, commit, push).
+- [x] Commit changes following the agreed workflow (diff summary, plan update, commit, push).
+- [x] **Map Styling & Refinement (Iteration 1 - `restor_map_beauty` branch):**
+  - [x] Create feature branch (`restor_map_beauty`).
+  - [x] Implement basic CI via GitHub Actions (`python-package.yml`).
+  - [x] Add CI badge to README.
+  - [x] Update test notebook (`test.ipynb`) to use `ChoroplethPlotter` class.
+  - [x] Refine `plotter.py` and YAML configs (`usa_states.yaml`, `canada_provinces.yaml`) to:
+    - [x] Implement lake plotting based on config.
+    - [x] Implement label placement (direct, offset annotations, clipping) based on config.
+    - [x] Correct legend/colorbar handling (single, vertical).
+    - [x] Make map projection configurable (`target_crs` in YAML).
+    - [x] Apply appropriate projections (Albers for USA, Lambert for Canada).
+    - [x] Set map extent dynamically for projected maps.
+    - [x] Add 10m admin layer for neighbor plotting.
+    - [x] Plot neighboring countries (Admin 0).
+    - [x] Clip neighbors to map viewport.
+    - [x] Add semi-transparent label backgrounds.
+    - [x] Simplify label offset config (removed `small_regions`).
+    - [x] Adjust offset values for projected coordinates.
+  - [x] Commit and push styling/refinement changes.
 
 ## Phase 3: CI/CD and Finalization
 
 - [ ] Set up `pytest` configuration.
-- [x] Create GitHub Actions workflow (`.github/workflows/ci.yml`) for:
-    - [x] Checking out code.
-    - [x] Setting up Python and `uv`.
-    - [x] Installing dependencies.
+- [x] Create GitHub Actions workflow (`.github/workflows/python-package.yml`) for:
+    - [x] Checking out code (`actions/checkout@v4`).
+    - [x] Setting up Python (`actions/setup-python@v4`).
+    - [x] Installing dependencies (`pip install build pytest .`).
     - [x] Running tests (`pytest`).
-    - [x] Building the package (`uv build`).
-- [ ] Ensure CI passes.
+    - [x] Building the package (`python -m build`).
+- [ ] Ensure CI passes (requires push to GitHub).
+- [x] Add CI status badge placeholder to `README.md`.
 - [x] Add basic usage documentation (README update or separate docs).
 - [ ] Final commit and push.
 
