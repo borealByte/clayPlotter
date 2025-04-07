@@ -38,12 +38,12 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
 ## Phase 3: CI/CD and Finalization
 
 - [ ] Set up `pytest` configuration.
-- [ ] Create GitHub Actions workflow (`.github/workflows/ci.yml`) for:
-    - [ ] Checking out code.
-    - [ ] Setting up Python and `uv`.
-    - [ ] Installing dependencies.
-    - [ ] Running tests (`pytest`).
-    - [ ] Building the package (`uv build`).
+- [x] Create GitHub Actions workflow (`.github/workflows/ci.yml`) for:
+    - [x] Checking out code.
+    - [x] Setting up Python and `uv`.
+    - [x] Installing dependencies.
+    - [x] Running tests (`pytest`).
+    - [x] Building the package (`uv build`).
 - [ ] Ensure CI passes.
 - [ ] Add basic usage documentation (README update or separate docs).
 - [ ] Final commit and push.
