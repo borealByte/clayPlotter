@@ -48,7 +48,6 @@ plt.savefig("my_choropleth_map.png")
 plt.show() # Optional: display the plot
 ```
 
-
 ## 🔮 Future Plans
 
 *   Publishing to PyPI for easy installation.
