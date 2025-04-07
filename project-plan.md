@@ -45,7 +45,7 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
     - [x] Running tests (`pytest`).
     - [x] Building the package (`uv build`).
 - [ ] Ensure CI passes.
-- [ ] Add basic usage documentation (README update or separate docs).
+- [x] Add basic usage documentation (README update or separate docs).
 - [ ] Final commit and push.
 
 ## Future Considerations
