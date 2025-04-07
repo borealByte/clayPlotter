@@ -25,6 +25,7 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
 - [x] Write tests for the function/method (`tests/test_...`).
 - [x] Implement/Refactor the function/method in `src/clayPlotter/`.
 - [x] Ensure tests pass.
+- [x] TDD: Implement user data loading and validation (from YAML/CSV).
 - [ ] Keep files under ~350 lines (break down if needed).
 - [ ] Commit changes following the agreed workflow (diff summary, plan update, commit, push).
 
