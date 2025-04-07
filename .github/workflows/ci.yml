@@ -25,7 +25,7 @@ jobs:
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
-      run: uv sync # Assuming no lock file yet, adjust if needed
+      run: uv sync --extra dev # Install dev dependencies including pytest
 
     - name: Run tests
       run: uv run pytest
