@@ -15,7 +15,7 @@ Here's a minimal example of how to generate a choropleth map using `clayPlotter`
 import pandas as pd
 from clayPlotter import ChoroplethPlotter
 import matplotlib.pyplot as plt
-
+ 
 # Prepare your data
 data = pd.DataFrame({
     'State': ['California', 'Texas', 'New York', 'Florida'],
