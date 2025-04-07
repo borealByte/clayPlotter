@@ -1,0 +1,54 @@
+[build-system]
+requires = ["uv >= 0.1.17"]
+build-backend = "uv.build"
+
+[project]
+name = "clayPlotter"
+version = "0.1.0" # Initial version
+description = "A Python package for creating configurable choropleth maps."
+authors = [
+    { name = "Clay", email = "clay@example.com" }, # Replace with actual author info if available
+]
+readme = "README.md" # Assuming a README will be created later
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License", # Assuming MIT based on LICENSE file presence
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "geopandas>=0.13.0", # Specify reasonable minimum versions
+    "matplotlib>=3.7.0",
+    "pandas>=1.5.0",
+    "PyYAML>=6.0",
+    "shapely>=2.0",
+    "requests>=2.28.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
+Repository = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
+
+# Optional: Configure uv tool settings if needed
+# [tool.uv]
+# ...
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0" # Must match [project] version
+version_files = [
+    "pyproject.toml:^version", # Use regex to find version = "..."
+    "src/clayPlotter/__version__.py:^__version__" # Use regex for __version__ = "..."
+]
+tag_format = "v$version"
+bump_message = "chore(release): bump version to $current_version → $new_version"
+update_changelog_on_bump = true
+major_version_zero = true # Allows 0.x.y versions
