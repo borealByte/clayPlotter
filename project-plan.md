@@ -26,6 +26,12 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
 - [x] Implement/Refactor the function/method in `src/clayPlotter/`.
 - [x] Ensure tests pass.
 - [x] TDD: Implement user data loading and validation (from YAML/CSV).
+- [ ] TDD: Implement core ChoroplethPlotter class and plot generation.
+  - [x] Write tests for ChoroplethPlotter (`tests/test_plotter.py`).
+  - [x] Implement minimal ChoroplethPlotter class structure (`src/clayPlotter/plotter.py`).
+  - [x] Ensure tests pass against minimal structure.
+  - [x] Implement core logic (`_prepare_data`, `plot`) in `ChoroplethPlotter`.
+  - [x] Ensure tests pass for core logic implementation.
 - [ ] Keep files under ~350 lines (break down if needed).
 - [ ] Commit changes following the agreed workflow (diff summary, plan update, commit, push).
 
