@@ -1,0 +1,11 @@
+# Ignore all .zip files
+*.zip
+
+# Ignore Python cache directories and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore the .roomodes file
+.roomodes

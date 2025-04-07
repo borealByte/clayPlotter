@@ -1,0 +1,102 @@
+# Configuration for plotting choropleth maps, adapted for Canadian Provinces
+# Based on usa_states.yaml
+
+# --- Data Selection ---
+country_codes: ['CA'] # ISO A2 codes of countries to primarily focus on
+
+# Level 1 admin codes (e.g., Canadian province postal codes) for the main map viewport
+# Set to null to indicate filtering out inset regions dynamically (if any were defined)
+main_level1_codes: ['ON', 'QC', 'NS', 'NB', 'MB', 'BC', 'PE', 'SK', 'AB', 'NL', 'YT', 'NT', 'NU'] # All Provinces & Territories (quoted)
+
+# --- Inset Regions ---
+# No standard insets needed for mainland Canada like AK/HI for US.
+# Define if specific territories or islands need separate focus later.
+inset_level1_regions: []
+
+# --- Main Map View Settings ---
+main_map_settings:
+  xlim: [-145, -50] # Adjusted longitude limits for Canada
+  ylim: [40, 85]   # Adjusted latitude limits for Canada (includes northern territories)
+  include_lakes: true # Plot lakes on the main map
+  include_neighboring_countries: true # Plot neighboring countries (e.g., US)
+  include_neighboring_level1: true # Plot neighboring L1 regions (e.g., US states)
+  # List specific lakes to include by name. If empty or omitted, no lakes will be plotted (even if include_lakes is true).
+  include_lake_names: ['Lake Superior','Lake Michigan', 'Lake Huron', 'Lake Erie', 'Lake Ontario', 'Great Bear Lake', 'Great Slave Lake', 'Lake Winnipeg', 'Lake Athabasca']
+
+# --- Styling ---
+# Inherited from usa_states.yaml, adjust as needed
+styling:
+  cmap: 'RdYlGn' # Default colormap for data values (Red-Yellow-Green)
+  missing_color: 'lightgrey'
+  lake_color: 'aliceblue'
+  lake_edge_color: 'darkblue'
+  lake_linewidth: 0.3
+  level1_edge_color: 'black'
+  level1_linewidth: 0.5
+  country_color: 'lightgrey' # Fill color for neighboring countries
+  country_edge_color: 'darkgrey'
+  country_linewidth: 0.5
+  neighbor_l1_edgecolor: 'darkgrey' # Edge color for neighboring L1 regions
+  neighbor_l1_linewidth: 0.5
+  neighbor_l1_linestyle: '--'
+  neighbor_l1_fill_color: 'lightgrey' # Fill color for neighboring L1 regions
+  colorbar_orientation: 'vertical'
+  colorbar_fraction: 0.03
+  colorbar_pad: 0.02
+  ocean_color: 'aliceblue' # Background color for the axes (ocean)
+
+# --- Label Settings ---
+label_settings:
+  add_labels: true
+  level1_code_column: 'postal' # Column name in the GeoDataFrame holding the L1 code (e.g., 'postal' for CA) - VERIFY THIS from shapefile
+  value_format: "{:.0f}" # Format string for the value part of the label (e.g., "{:.0f}" for integer year)
+  label_format: "{code} - {value}" # Format string for the full label text
+  na_value_text: "N/A" # Text to display if value is missing
+  label_fontsize: 7
+  annotation_fontsize: 6
+  label_bbox_style: # Settings for matplotlib.text.Text.set_bbox
+    boxstyle: "round,pad=0.1"
+    fc: "white"
+    ec: "none"
+    alpha: 0.6
+  annotation_bbox_style: # Settings for annotation bbox
+    boxstyle: "round,pad=0.1"
+    fc: "white"
+    ec: "none"
+    alpha: 0.7
+  annotation_arrowprops: # Settings for annotation arrow
+    arrowstyle: "-"
+    color: 'gray'
+    lw: 0.5
+
+  # L1 codes requiring offset labels (annotations) - Define for Canada if needed
+  small_regions: []
+    # e.g., 'PE' for Prince Edward Island if label overlaps
+
+  # Offsets for small_regions (mapping L1 code to [lon_offset, lat_offset])
+  offsets: {}
+    # e.g., 'PE': [lon_offset, lat_offset]
+
+  # L1 codes requiring label placement within a clipped portion of their geometry
+  clipped_regions: {}
+    # e.g., 'NL': ['bottom', 0.6] # For Newfoundland part of NL
+
+  # Special handling for specific inset labels (if insets are added)
+  inset_label_handling: {}
+
+# --- Figure Settings ---
+figure:
+  figsize: [15, 12] # Adjusted figsize slightly for Canada's shape
+  title: 'Canadian Province Confederation Year' # Updated title
+  tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
+
+# --- Data Loading/Preparation Hints (Informational) ---
+# These are not directly used by the plotting function but help understand data needs
+data_hints:
+  level1_name_column: 'name' # Expected column name for L1 admin region name (e.g., 'name' for CA provinces) - VERIFY THIS
+  level1_code_column: 'postal' # Expected column name for L1 admin region code (e.g., 'postal' for CA provinces) - VERIFY THIS
+  country_code_column: 'iso_a2' # Expected column name for country ISO code in L1 shapefile
+  neighboring_country_codes: ['US'] # ISO A2 codes considered neighbors
+  neighboring_country_name_column: 'ADMIN' # Potential column name for country name in country shapefile (fallback: NAME, SOVEREIGNT)
+  lake_name_column: 'name' # Potential column name for lake name (fallback: name_en, gn_name)
+  # great_lakes_names: [...] # This is now superseded by main_map_settings.include_lake_names
