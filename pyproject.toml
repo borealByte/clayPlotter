@@ -37,6 +37,14 @@ dependencies = [
 Homepage = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
 Repository = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
 
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.0.0",
+    "nbconvert>=7.0.0",
+    "pytest>=7.0.0", # Also include pytest here for consistency
+    "build>=0.10.0", # And build
+]
+
 # Optional: Configure uv tool settings if needed
 # [tool.uv]
 # ...
@@ -52,3 +60,7 @@ tag_format = "v$version"
 bump_message = "chore(release): bump version to $current_version → $new_version"
 update_changelog_on_bump = true
 major_version_zero = true # Allows 0.x.y versions
+
+[tool.setuptools.package-data]
+# Include YAML files from the resources directory within the package
+clayPlotter = ["resources/*.yaml"]
