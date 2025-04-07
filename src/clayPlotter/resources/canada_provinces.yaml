@@ -15,8 +15,9 @@ inset_level1_regions: []
 
 # --- Main Map View Settings ---
 main_map_settings:
-  xlim: [-145, -50] # Adjusted longitude limits for Canada
-  ylim: [40, 85]   # Adjusted latitude limits for Canada (includes northern territories)
+  # xlim: [-145, -50] # Removed fixed limits, let GeoPandas determine extent
+  # ylim: [40, 85]   # Removed fixed limits
+  target_crs: 'EPSG:3978' # Added projection for Canada Atlas Lambert
   include_lakes: true # Plot lakes on the main map
   include_neighboring_countries: true # Plot neighboring countries (e.g., US)
   include_neighboring_level1: true # Plot neighboring L1 regions (e.g., US states)
@@ -26,12 +27,12 @@ main_map_settings:
 # --- Styling ---
 # Inherited from usa_states.yaml, adjust as needed
 styling:
-  cmap: 'RdYlGn' # Default colormap for data values (Red-Yellow-Green)
+  cmap: 'YlOrRd' # Match USA styling
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
-  lake_edge_color: 'darkblue'
+  lake_edge_color: 'darkgrey'
   lake_linewidth: 0.3
-  level1_edge_color: 'black'
+  level1_edge_color: 'darkgrey' # Match USA styling
   level1_linewidth: 0.5
   country_color: 'lightgrey' # Fill color for neighboring countries
   country_edge_color: 'darkgrey'
@@ -40,9 +41,7 @@ styling:
   neighbor_l1_linewidth: 0.5
   neighbor_l1_linestyle: '--'
   neighbor_l1_fill_color: 'lightgrey' # Fill color for neighboring L1 regions
-  colorbar_orientation: 'vertical'
-  colorbar_fraction: 0.03
-  colorbar_pad: 0.02
+  # colorbar settings are handled by plotter.py defaults now
   ocean_color: 'aliceblue' # Background color for the axes (ocean)
 
 # --- Label Settings ---

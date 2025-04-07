@@ -28,7 +28,7 @@ inset_level1_regions:
       width: "15%"
       height: "15%"
       loc: 'lower left'
-      bbox_to_anchor: [0.2, 0.0, 1, 1] # Offset slightly from AK
+      bbox_to_anchor: [0.25, 0.0, 1, 1] # Offset slightly more from AK
       bbox_transform: 'ax.transAxes'
       borderpad: 0
     xlim: [-160.5, -154.5]
@@ -38,7 +38,8 @@ inset_level1_regions:
 # --- Main Map View Settings ---
 main_map_settings:
   xlim: [-130, -65]
-  ylim: [24, 50]
+  ylim: [24, 50]   # Reverted northern limit
+  target_crs: 'EPSG:5070' # Added projection for CONUS Albers
   include_lakes: true # Plot lakes on the main map
   include_neighboring_countries: true # Plot neighboring countries (e.g., CA, MX)
   include_neighboring_level1: true # Plot neighboring L1 regions (e.g., Canadian provinces)
@@ -46,10 +47,10 @@ main_map_settings:
 
 # --- Styling ---
 styling:
-  cmap: 'viridis' # Default colormap for data values (using viridis)
+  cmap: 'YlOrRd' # Default colormap for data values (using viridis)
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
-  lake_edge_color: 'darkblue'
+  lake_edge_color: 'darkgrey'
   lake_linewidth: 0.3
   level1_edge_color: 'darkgrey' # Softer border color
   level1_linewidth: 0.5
@@ -75,41 +76,29 @@ label_settings:
     boxstyle: "round,pad=0.1"
     fc: "white"
     ec: "none"
-    alpha: 0.0 # Remove label background
+    alpha: 0.7 # Semi-transparent label background
   annotation_bbox_style: # Settings for annotation bbox
     boxstyle: "round,pad=0.1"
     fc: "white"
     ec: "none"
-    alpha: 0.0 # Remove annotation background
+    alpha: 0.7 # Semi-transparent annotation background
   annotation_arrowprops: # Settings for annotation arrow
     arrowstyle: "-"
     color: 'gray'
     lw: 0.5
 
-  # L1 codes requiring offset labels (annotations)
-  small_regions:
-    - 'RI'
-    - 'DC'
-    - 'DE'
-    - 'CT'
-    - 'NJ'
-    - 'VT'
-    - 'NH'
-    - 'MD'
-    # - 'HI' # Handled separately in inset logic
-    - 'MA' # Included here as per original code logic, though plotted directly
-
+  # L1 codes requiring offset labels (annotations) are defined solely by the keys in 'offsets' below
   # Offsets for small_regions (mapping L1 code to [lon_offset, lat_offset])
   offsets:
-    'RI': [2.6, 0.0]
-    'CT': [2.0, -0.8]
-    'NJ': [1.8, -1.2]
-    'DE': [1.5, -1.0]
-    'MD': [1.2, -1.8]
+    'RI': [2.6, 0.0]  # Reverted x-offset
+    'CT': [2.0, -0.8]  # Reverted x-offset
+    'NJ': [1.8, -1.2]  # Reverted x-offset
+    'DE': [1.5, -1.0]  # Reverted x-offset
+    'MD': [1.2, -1.8]  # Reverted x-offset
     'DC': [1.0, -3.5]
     'VT': [-0.5, 1.6]
     'NH': [1.5, -0.7]
-    'MA': [2.0, 0.0] # Included here as per original code logic
+    'MA': [2.0, 0.0]  # Reverted x-offset
 
   # L1 codes requiring label placement within a clipped portion of their geometry
   # Format: 'L1_CODE': ['clip_side', clip_percentage]
@@ -119,7 +108,6 @@ label_settings:
     'KY': ['bottom', 0.5]
     'MI': ['bottom', 0.35]
     'VA': ['bottom', 0.35]
-    'MA': ['top', 0.5] # Note: MA is also in small_regions/offsets in original code, might need adjustment
     'NC': ['top', 0.5]
     'NV': ['top', 0.5]
     'PA': ['bottom', 0.8]
@@ -127,6 +115,7 @@ label_settings:
     'LA': ['bottom', 0.7]
     # 'AK': ['top', 0.5] # Handled separately
     'SD': ['top', 0.9]
+    'NY': ['bottom', 0.4]
 
   # Special handling for specific inset labels
   inset_label_handling:
@@ -142,7 +131,7 @@ label_settings:
 
 # --- Figure Settings ---
 figure:
-  figsize: [15, 10]
+  figsize: [18, 10] # Wider figure aspect ratio
   title: 'Level 1 Admin Choropleth' # Generic title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 
