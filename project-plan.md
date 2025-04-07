@@ -18,10 +18,11 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
 ## Phase 2: Refactoring and TDD
 
 *(Repeat for each logical piece of functionality)*
-- [ ] Analyze functionality in `src/clayPlotter/plotter.py`.
-- [ ] Define Object-Oriented structure.
+- [x] Analyze functionality in `src/clayPlotter/plotter.py`.
+- [x] Define Object-Oriented structure.
 - [ ] Identify first function/method to refactor/implement.
-- [ ] Write tests for the function/method (`tests/test_...`).
+- [ ] TDD: Implement shapefile downloading/caching/reading in GeoDataManager.
+- [x] Write tests for the function/method (`tests/test_...`).
 - [ ] Implement/Refactor the function/method in `src/clayPlotter/`.
 - [ ] Ensure tests pass.
 - [ ] Keep files under ~350 lines (break down if needed).
