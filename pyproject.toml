@@ -1,6 +1,6 @@
 [build-system]
-requires = ["uv >= 0.1.17"]
-build-backend = "uv.build"
+requires = ["setuptools>=61.0"]  # Use setuptools as the build backend
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "clayPlotter"

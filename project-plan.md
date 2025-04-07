@@ -23,8 +23,8 @@ This plan outlines the steps to transform the `clayPlotter` project into a moder
 - [ ] Identify first function/method to refactor/implement.
 - [ ] TDD: Implement shapefile downloading/caching/reading in GeoDataManager.
 - [x] Write tests for the function/method (`tests/test_...`).
-- [ ] Implement/Refactor the function/method in `src/clayPlotter/`.
-- [ ] Ensure tests pass.
+- [x] Implement/Refactor the function/method in `src/clayPlotter/`.
+- [x] Ensure tests pass.
 - [ ] Keep files under ~350 lines (break down if needed).
 - [ ] Commit changes following the agreed workflow (diff summary, plan update, commit, push).
 

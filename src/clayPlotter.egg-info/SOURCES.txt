@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/clayPlotter/__init__.py
+src/clayPlotter/__version__.py
+src/clayPlotter/geo_data_manager.py
+src/clayPlotter/plotter.py
+src/clayPlotter.egg-info/PKG-INFO
+src/clayPlotter.egg-info/SOURCES.txt
+src/clayPlotter.egg-info/dependency_links.txt
+src/clayPlotter.egg-info/requires.txt
+src/clayPlotter.egg-info/top_level.txt
+tests/test_geo_data_manager.py
