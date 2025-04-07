@@ -90,32 +90,32 @@ label_settings:
   # L1 codes requiring offset labels (annotations) are defined solely by the keys in 'offsets' below
   # Offsets for small_regions (mapping L1 code to [lon_offset, lat_offset])
   offsets:
-    'RI': [2.6, 0.0]  # Reverted x-offset
-    'CT': [2.0, -0.8]  # Reverted x-offset
-    'NJ': [1.8, -1.2]  # Reverted x-offset
-    'DE': [1.5, -1.0]  # Reverted x-offset
-    'MD': [1.2, -1.8]  # Reverted x-offset
-    'DC': [1.0, -3.5]
-    'VT': [-0.5, 1.6]
-    'NH': [1.5, -0.7]
-    'MA': [2.0, 0.0]  # Reverted x-offset
+    'RI': [260000, -20000]      
+    'CT': [200000, -80000] 
+    'NJ': [180000, -60000]
+    'MD': [270000, -200000]
+    'DC': [300000, -350000]
+    'VT': [-50000, 160000] 
+    'NH': [180000, -90000] 
+    'MA': [250000, 10000]    
+    'DE': [250000, -50000]      
 
   # L1 codes requiring label placement within a clipped portion of their geometry
   # Format: 'L1_CODE': ['clip_side', clip_percentage]
   # clip_side can be 'top', 'bottom', 'left', 'right'
   clipped_regions:
     'ID': ['bottom', 0.5]
-    'KY': ['bottom', 0.5]
+    'KY': ['bottom', 0.7]
     'MI': ['bottom', 0.35]
-    'VA': ['bottom', 0.35]
-    'NC': ['top', 0.5]
+    'VA': ['right', 0.45]
+    'NC': ['top', 0.8]
     'NV': ['top', 0.5]
     'PA': ['bottom', 0.8]
     'MT': ['top', 0.9]
     'LA': ['bottom', 0.7]
     # 'AK': ['top', 0.5] # Handled separately
     'SD': ['top', 0.9]
-    'NY': ['bottom', 0.4]
+    'NY': ['right', 0.6]
 
   # Special handling for specific inset labels
   inset_label_handling:
