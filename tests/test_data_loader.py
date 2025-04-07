@@ -1,6 +1,6 @@
 import pytest
 import os
-from src.clayPlotter.data_loader import DataLoader, InvalidDataError, InvalidFormatError  # Assuming these will exist
+from clayPlotter.data_loader import DataLoader, InvalidDataError, InvalidFormatError  # Import from installed package
 
 # Define expected structure (adjust as needed)
 EXPECTED_KEYS = {'name', 'value'}
