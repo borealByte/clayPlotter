@@ -54,24 +54,16 @@ def test_choropleth_plotter_initialization(sample_user_data):
     location_col = "location"
     value_col = "metric"
 
-    # Patch GeoDataManager to avoid actual file operations during init
+    # Patch GeoDataManager and yaml.safe_load to avoid file/network operations during init
     with patch('clayPlotter.plotter.GeoDataManager') as MockGeoDataManager, \
-         patch('clayPlotter.plotter.pkg_resources.files') as mock_pkg_files: # Patch resource loading
+         patch('clayPlotter.plotter.yaml.safe_load') as mock_safe_load:
 
-        # Configure mock resource loading
-        mock_resource_ref = MagicMock()
-        mock_resource_ref.is_file.return_value = True
-        mock_pkg_files.return_value.__truediv__.return_value.__truediv__.return_value = mock_resource_ref
-        # Mock the context manager for opening the file
-        mock_file_handle = MagicMock()
-        mock_file_handle.__enter__.return_value.read.return_value = """
-figure:
-  figsize: [10, 8]
-styling:
-  cmap: 'viridis'
-main_map_settings: {}
-""" # Minimal valid YAML
-        mock_resource_ref.open.return_value = mock_file_handle
+        # Configure mock yaml loading
+        mock_safe_load.return_value = {
+            'figure': {'figsize': [10, 8]},
+            'styling': {'cmap': 'viridis'},
+            'main_map_settings': {}
+        } # Return the expected dict directly
 
         # Instantiate the plotter
         plotter = ChoroplethPlotter(
@@ -90,6 +82,7 @@ main_map_settings: {}
         assert isinstance(plotter.geo_manager, MagicMock) # Check it used the patched GeoDataManager
         assert plotter.plot_config is not None # Check config was loaded
         MockGeoDataManager.assert_called_once() # Check GeoDataManager was instantiated
+        mock_safe_load.assert_called_once() # Check config load was attempted
 
 
 # Note: Tests for internal methods like _prepare_data and _calculate_colors
@@ -97,9 +90,9 @@ main_map_settings: {}
 
 @patch('clayPlotter.plotter.plt.subplots')
 @patch('clayPlotter.plotter.GeoDataManager') # Patch the class used internally
-@patch('clayPlotter.plotter.pkg_resources.files') # Patch resource loading
+@patch('clayPlotter.plotter.yaml.safe_load') # Patch yaml loading
 @patch('geopandas.GeoDataFrame.plot') # Patch the final plotting call
-def test_plot_generation_returns_axes(mock_gdf_plot, mock_pkg_files, MockGeoDataManager, mock_subplots, sample_user_data):
+def test_plot_generation_returns_axes(mock_gdf_plot, mock_safe_load, MockGeoDataManager, mock_subplots, sample_user_data):
     """Test that the plot method orchestrates calls and returns matplotlib Figure and Axes."""
     # Configure the mock for plt.subplots to return a figure and axes
     mock_fig = MagicMock()
@@ -118,19 +111,12 @@ def test_plot_generation_returns_axes(mock_gdf_plot, mock_pkg_files, MockGeoData
     }, crs="EPSG:4326")
     mock_geo_manager_instance.get_geodataframe.return_value = mock_geo_df
 
-    # Mock resource loading for config
-    mock_resource_ref = MagicMock()
-    mock_resource_ref.is_file.return_value = True
-    mock_pkg_files.return_value.__truediv__.return_value.__truediv__.return_value = mock_resource_ref
-    mock_file_handle = MagicMock()
-    mock_file_handle.__enter__.return_value.read.return_value = """
-figure:
-  figsize: [12, 9]
-styling:
-  cmap: 'plasma'
-main_map_settings: {}
-""" # Minimal valid YAML for test
-    mock_resource_ref.open.return_value = mock_file_handle
+    # Mock yaml loading for config
+    mock_safe_load.return_value = {
+        'figure': {'figsize': [12, 9]},
+        'styling': {'cmap': 'plasma'},
+        'main_map_settings': {}
+    } # Return the expected dict directly
 
     # --- Instantiate Plotter ---
     geography_key = "usa_states"
