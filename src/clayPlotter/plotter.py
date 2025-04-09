@@ -3,7 +3,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, LinearSegmentedColormap, to_rgba
 from matplotlib import cm
 from pathlib import Path
 import yaml
@@ -383,9 +383,43 @@ class ChoroplethPlotter:
         ax.set_yticks([])
 
         # --- Define Base Plotting Arguments from Config ---
+        # Handle colormap definition (string name or list of colors)
+        cmap_config = style_config.get('cmap', 'viridis')
+        cmap_to_use = None # Initialize
+
+        if isinstance(cmap_config, str):
+            # Standard matplotlib colormap name
+            logger.info(f"Using standard matplotlib colormap: '{cmap_config}'")
+            cmap_to_use = cmap_config
+        elif isinstance(cmap_config, list):
+            # Attempt to create a custom LinearSegmentedColormap from the list
+            logger.info(f"Attempting to create custom colormap from list: {cmap_config}")
+            try:
+                # Validate list is not empty and contains strings (basic check)
+                if not cmap_config or not all(isinstance(c, str) for c in cmap_config):
+                     raise ValueError("Colormap list must contain color strings.")
+
+                # Convert color strings to RGBA tuples for the colormap
+                colors_rgba = [to_rgba(c) for c in cmap_config]
+
+                # Create the custom colormap
+                custom_cmap_name = f"custom_cmap_{'_'.join(c.strip('#') for c in cmap_config)}" # Generate a name
+                cmap_to_use = LinearSegmentedColormap.from_list(custom_cmap_name, colors_rgba)
+                logger.info(f"Successfully created custom colormap '{custom_cmap_name}'.")
+            except ValueError as ve: # Catches invalid color strings from to_rgba or our validation
+                 logger.error(f"Invalid color format or list structure in custom cmap definition: {cmap_config}. Error: {ve}. Falling back to 'viridis'.", exc_info=True)
+                 cmap_to_use = 'viridis' # Fallback
+            except Exception as cmap_err:
+                 logger.error(f"Failed to create custom colormap from list {cmap_config}: {cmap_err}. Falling back to 'viridis'.", exc_info=True)
+                 cmap_to_use = 'viridis' # Fallback
+        else:
+            # Invalid type in config
+            logger.warning(f"Invalid type for 'cmap' in configuration: {type(cmap_config)}. Expected string or list. Falling back to 'viridis'.")
+            cmap_to_use = 'viridis'
+
         base_plot_kwargs = {
             'column': self.value_col,
-            'cmap': style_config.get('cmap', 'viridis'),
+            'cmap': cmap_to_use, # Use the determined colormap (string name or object)
             'linewidth': style_config.get('level1_linewidth', 0.5),
             'edgecolor': style_config.get('level1_edge_color', '0.8'),
             'missing_kwds': {

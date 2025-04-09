@@ -27,7 +27,7 @@ main_map_settings:
 # --- Styling ---
 # Inherited from usa_states.yaml, adjust as needed
 styling:
-  cmap: 'Reds_r' # Red and white colormap reverse
+  cmap: ['#FF0000', '#FFE5E5', '#FFF8F8', '#FFFFFF'] # Custom 5-stop colormap: Red -> Pinks -> White
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
   lake_edge_color: 'darkgrey'
