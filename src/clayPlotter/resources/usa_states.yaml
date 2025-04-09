@@ -133,11 +133,13 @@ label_settings:
 figure:
   figsize: [18, 10] # Wider figure aspect ratio
   title: 'Level 1 Admin Choropleth' # Generic title
+  title_fontsize: 16 # Added font size for the title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 
 # --- Data Loading/Preparation Hints (Informational) ---
 # These are not directly used by the plotting function but help understand data needs
 data_hints:
+  geopackage_layer: 'ne_50m_admin_1_states_provinces' # Layer for primary US states data
   level1_name_column: 'NAME' # Expected column name for L1 admin region name (e.g., 'NAME' for US states)
   level1_code_column: 'postal' # Expected column name for L1 admin region code (e.g., 'postal' for US states)
   country_code_column: 'iso_a2' # Expected column name for country ISO code in L1 shapefile

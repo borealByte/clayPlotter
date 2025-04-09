@@ -15,17 +15,8 @@ DEFAULT_CACHE_DIR = Path.home() / ".cache" / "clayPlotter"
 GEOPACKAGE_ZIP_URL = "https://naciscdn.org/naturalearth/packages/natural_earth_vector.gpkg.zip"
 GEOPACKAGE_FILENAME = "natural_earth_vector.gpkg" # Expected filename inside the zip
 
-# Map geography keys to layer names within the GeoPackage
-# Find layer names by inspecting the GPKG file (e.g., using fiona.listlayers or QGIS)
-GEOGRAPHY_LAYERS = {
-    "usa_states": "ne_50m_admin_1_states_provinces",
-    "canada_provinces": "ne_50m_admin_1_states_provinces", # Same layer, needs filtering in plotter
-    "world_countries": "ne_50m_admin_0_countries",
-    "ne_lakes": "ne_50m_lakes",
-    "admin1_10m": "ne_10m_admin_1_states_provinces", # Added 10m Admin 1 layer
-    "china_provinces": "ne_10m_admin_1_states_provinces", # Use detailed layer, filter in plotter
-    # Add other layers as needed
-}
+# Layer mapping is now handled in individual config files (data_hints.geopackage_layer)
+# This dictionary is no longer needed.
 
 
 class GeoDataManager:
@@ -148,14 +139,13 @@ class GeoDataManager:
              raise RuntimeError(f"Failed to make GeoPackage available at {self.gpkg_path} after download/unzip attempt.")
 
 
-    def get_geodataframe(self, geography_key: str, **kwargs) -> gpd.GeoDataFrame:
+    def get_geodataframe(self, layer_name: str, **kwargs) -> gpd.GeoDataFrame:
         """
-        Loads a specific geographic layer from the cached Natural Earth GeoPackage.
+        Loads a specific geographic layer by name from the cached Natural Earth GeoPackage.
 
         Args:
-            geography_key: The key identifying the geographic layer
-                           (e.g., 'usa_states', 'world_countries'). Must be defined
-                           in GEOGRAPHY_LAYERS.
+            layer_name: The exact name of the layer within the GeoPackage file
+                        (e.g., 'ne_50m_admin_1_states_provinces').
             **kwargs: Additional keyword arguments passed directly to
                       geopandas.read_file() when reading the layer.
 
@@ -163,27 +153,28 @@ class GeoDataManager:
             A GeoDataFrame containing the requested geographic layer.
 
         Raises:
-            ValueError: If the geography_key is unknown or download/unzip fails.
+            ValueError: If download/unzip fails.
             FileNotFoundError: If the GeoPackage file cannot be made available.
-            Exception: If reading the specific layer from the GeoPackage fails.
+            RuntimeError: If reading the specific layer from the GeoPackage fails.
         """
-        if geography_key not in GEOGRAPHY_LAYERS:
-            raise ValueError(f"Unknown geography_key: '{geography_key}'. Available keys: {list(GEOGRAPHY_LAYERS.keys())}")
-
-        layer_name = GEOGRAPHY_LAYERS[geography_key]
+        # Validation of layer_name happens implicitly when geopandas tries to read it.
+        # We could add explicit checking using fiona.listlayers if desired, but
+        # letting geopandas handle it provides a more direct error if the layer is missing.
+        if not isinstance(layer_name, str) or not layer_name:
+             raise ValueError("layer_name must be a non-empty string.")
 
         try:
             # Ensure the .gpkg file is downloaded and extracted
             self._ensure_geopackage_available()
         except (ValueError, FileNotFoundError, RuntimeError) as e:
              # Re-raise errors related to getting the gpkg file ready
-             raise ValueError(f"Failed to prepare GeoPackage for key '{geography_key}': {e}") from e
+             raise ValueError(f"Failed to prepare GeoPackage to read layer '{layer_name}': {e}") from e
 
-        logger.info(f"Reading layer '{layer_name}' for key '{geography_key}' from {self.gpkg_path}")
+        logger.info(f"Reading layer '{layer_name}' from {self.gpkg_path}")
         try:
             # Read the specific layer from the GeoPackage file
             gdf = gpd.read_file(self.gpkg_path, layer=layer_name, **kwargs)
-            logger.info(f"Successfully loaded layer '{layer_name}' for key '{geography_key}'")
+            logger.info(f"Successfully loaded layer '{layer_name}'")
             return gdf
         except Exception as e:
             # Handle errors during the actual layer reading

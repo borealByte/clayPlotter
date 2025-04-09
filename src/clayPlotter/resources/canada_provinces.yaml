@@ -87,11 +87,13 @@ label_settings:
 figure:
   figsize: [15, 12] # Adjusted figsize slightly for Canada's shape
   title: 'Canadian Province Confederation Year' # Updated title
+  title_fontsize: 16 # Added font size for the title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 
 # --- Data Loading/Preparation Hints (Informational) ---
 # These are not directly used by the plotting function but help understand data needs
 data_hints:
+  geopackage_layer: 'ne_50m_admin_1_states_provinces' # Layer for primary Canada provinces data
   level1_name_column: 'name' # Expected column name for L1 admin region name (e.g., 'name' for CA provinces) - VERIFY THIS
   level1_code_column: 'postal' # Expected column name for L1 admin region code (e.g., 'postal' for CA provinces) - VERIFY THIS
   country_code_column: 'iso_a2' # Expected column name for country ISO code in L1 shapefile

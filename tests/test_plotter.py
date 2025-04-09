@@ -67,19 +67,21 @@ def mock_geo_data_map():
 
 @pytest.fixture(scope="module")
 def mock_config_map():
-    """Provides mock plot configurations for different geographies."""
+    """Provides mock plot configurations for different geographies, including data_hints."""
     return {
         "usa_states": {
-            'figure': {'figsize': [12, 9], 'title': 'USA Default Title'},
+            'figure': {'figsize': [12, 9], 'title': 'USA Default Title', 'title_fontsize': 12}, # Added fontsize
             'styling': {'cmap': 'plasma'},
             'main_map_settings': {},
-            'label_settings': {'level1_code_column': 'state_code'} # Example
+            'label_settings': {'level1_code_column': 'state_code'}, # Example
+            'data_hints': {'geopackage_layer': 'ne_50m_admin_1_states_provinces'} # Add required hint
         },
         "china_provinces": {
-            'figure': {'figsize': [16, 12], 'title': 'China Default Title'},
+            'figure': {'figsize': [16, 12], 'title': 'China Default Title', 'title_fontsize': 16}, # Added fontsize
             'styling': {'cmap': ['#FF0000', '#FFFFFF']}, # Example custom cmap
             'main_map_settings': {'target_crs': 'EPSG:4479'},
-            'label_settings': {'level1_code_column': 'name_en'} # Match mock GDF
+            'label_settings': {'level1_code_column': 'name_en'}, # Match mock GDF
+            'data_hints': {'geopackage_layer': 'ne_50m_admin_1_states_provinces'} # Add required hint
         }
     }
 
@@ -97,11 +99,13 @@ def test_choropleth_plotter_initialization(sample_user_data_map): # Use the map 
          patch('clayPlotter.plotter.yaml.safe_load') as mock_safe_load:
 
         # Configure mock yaml loading
+        # Configure mock yaml loading to include data_hints
         mock_safe_load.return_value = {
             'figure': {'figsize': [10, 8]},
             'styling': {'cmap': 'viridis'},
-            'main_map_settings': {}
-        } # Return the expected dict directly
+            'main_map_settings': {},
+            'data_hints': {'geopackage_layer': 'ne_50m_admin_1_states_provinces'} # Add required hint
+        }
 
         # Instantiate the plotter
         # Use data from the map fixture for a specific key
@@ -178,7 +182,9 @@ def test_plot_generation_returns_axes(
 
     # --- Assertions ---
     # Check that dependencies were called
-    mock_geo_manager_instance.get_geodataframe.assert_called_once_with(geography_key=geography_key)
+    # Check that get_geodataframe was called with the layer name from the mock config
+    expected_layer_name = mock_config_map[geography_key]['data_hints']['geopackage_layer']
+    mock_geo_manager_instance.get_geodataframe.assert_called_once_with(layer_name=expected_layer_name)
     mock_subplots.assert_called_once() # Check figure/axes were created
     mock_gdf_plot.assert_called_once() # Check the final plot call was made
 
