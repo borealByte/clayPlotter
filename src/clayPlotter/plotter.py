@@ -382,7 +382,7 @@ class ChoroplethPlotter:
         fig, ax = plt.subplots(1, 1, figsize=fig_config.get('figsize', (10, 10)))
         plot_title = title if title is not None else fig_config.get('title', f"Choropleth Map ({self.geography_key})")
         title_fontsize = fig_config.get('title_fontsize', 12) # Default to 12 if not specified
-        fig.suptitle(plot_title, fontsize=title_fontsize) # Use suptitle with specified fontsize
+        fig.suptitle(plot_title, fontsize=title_fontsize, y=0.97) # Use suptitle with specified fontsize and adjust y position
 
         # Set main map background (Limits and aspect ratio applied *after* potential reprojection)
         ax.set_facecolor(style_config.get('ocean_color', 'aliceblue'))

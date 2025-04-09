@@ -212,4 +212,4 @@ def test_plot_generation_returns_axes(
     # If using ax.set_title: mock_ax.set_title.assert_called_with('Test Plot Title')
     # Based on current plotter code, it uses fig.suptitle with fontsize
     expected_fontsize = mock_config_map[geography_key]['figure'].get('title_fontsize', 12) # Get expected fontsize
-    mock_fig.suptitle.assert_called_with(test_title, fontsize=expected_fontsize) # Check parameterized title and fontsize
+    mock_fig.suptitle.assert_called_with(test_title, fontsize=expected_fontsize, y=0.97) # Check title, fontsize, and y position

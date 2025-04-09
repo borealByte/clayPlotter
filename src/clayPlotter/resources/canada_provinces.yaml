@@ -87,7 +87,7 @@ label_settings:
 figure:
   figsize: [15, 12] # Adjusted figsize slightly for Canada's shape
   title: 'Canadian Province Confederation Year' # Updated title
-  title_fontsize: 16 # Added font size for the title
+  title_fontsize: 20 # Increased font size for the title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 
 # --- Data Loading/Preparation Hints (Informational) ---

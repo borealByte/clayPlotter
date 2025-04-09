@@ -83,7 +83,7 @@ label_settings:
 figure:
   figsize: [16, 12] # Adjusted figsize for China's shape
   title: 'China Province Data' # Generic title, override in plot call
-  title_fontsize: 16
+  title_fontsize: 20 # Increased font size
   tight_layout_rect: [0, 0.03, 1, 0.95]
 
 # --- Data Loading/Preparation Hints (Informational) ---
