@@ -281,6 +281,65 @@ class ChoroplethPlotter:
             except Exception as label_err:
                  logger.error(f"Failed to add label/annotation for code '{code}': {label_err}", exc_info=True)
 
+    # --- Inset Labeling Helper Method ---
+    def _add_inset_labels(self, gdf: gpd.GeoDataFrame, ax: Axes, label_config: dict, level1_code_col: str | None):
+        """Adds simplified labels to an inset map axis."""
+        logger.info("Adding labels to inset axis...")
+        if not label_config.get('add_labels', False) or not level1_code_col or level1_code_col not in gdf.columns:
+            logger.info("Inset labeling skipped: 'add_labels' is false, 'level1_code_column' is not defined, or column not found.")
+            return
+
+        # --- Get Basic Label Settings ---
+        value_format = label_config.get('value_format', "{:.0f}")
+        label_format = label_config.get('label_format', "{code} - {value}")
+        na_value_text = label_config.get('na_value_text', "N/A")
+        label_fontsize = label_config.get('label_fontsize', 7) # Use main label font size for consistency
+        label_bbox_style = label_config.get('label_bbox_style', None)
+
+        # --- Iterate and Add Simple Labels ---
+        for idx, row in gdf.iterrows():
+            if level1_code_col not in row or pd.isna(row[level1_code_col]):
+                logger.warning(f"Skipping inset label for row index {idx}: Missing or invalid code.")
+                continue
+            code = str(row[level1_code_col]).strip()
+
+            if self.value_col not in row:
+                 logger.warning(f"Skipping inset label for code '{code}': Value column '{self.value_col}' not found.")
+                 continue
+            value = row[self.value_col]
+            geometry = row['geometry']
+
+            if pd.isna(geometry):
+                logger.warning(f"Skipping inset label for code '{code}': Missing geometry.")
+                continue
+
+            # Format label text
+            value_str = na_value_text if pd.isna(value) else value_format.format(value)
+            label_text = label_format.format(code=code, value=value_str)
+
+            # Determine placement point (representative_point)
+            try:
+                if not geometry.is_valid:
+                    geometry = geometry.buffer(0)
+                    if not geometry.is_valid:
+                         logger.warning(f"Skipping inset label for code '{code}': Invalid geometry.")
+                         continue
+                placement_point = geometry.representative_point()
+                place_x, place_y = placement_point.x, placement_point.y
+            except Exception as e:
+                logger.warning(f"Skipping inset label for code '{code}': Error calculating representative point - {e}")
+                continue
+
+            # --- Add Text Directly (No Offsets/Clipping) ---
+            try:
+                logger.debug(f"Applying default placement for inset label code '{code}'.")
+                ax.text(place_x, place_y, label_text,
+                        fontsize=label_fontsize, ha='center', va='center',
+                        bbox=label_bbox_style)
+            except Exception as label_err:
+                 logger.error(f"Failed to add inset label for code '{code}': {label_err}", exc_info=True)
+
+
     # --- Plotting Method ---
     def plot(self, geo_join_column: str = 'name', title: str | None = None, **kwargs) -> tuple[plt.Figure, Axes]:
         """
@@ -655,8 +714,12 @@ class ChoroplethPlotter:
                               linewidth=style_config.get('lake_linewidth', 0.3),
                               zorder=2
                           )
-            except Exception as e:
-                 logger.error(f"Failed to create or plot inset for codes {codes}: {e}", exc_info=True)
+                # --- Add Labels to Inset using the dedicated function ---
+                if label_config.get('add_labels', False) and level1_code_col:
+                    self._add_inset_labels(inset_data, ax_inset, label_config, level1_code_col)
+
+            except Exception as e: # This except corresponds to the try starting at line 617
+                logger.error(f"Failed to create or plot inset for codes {codes}: {e}", exc_info=True)
 
 
         # --- Add Labels (Call the helper method) ---
@@ -678,7 +741,6 @@ class ChoroplethPlotter:
             else:
                  logger.warning("GeoDataFrame for labeling is empty after filtering; skipping labeling.")
 
-        # TODO: Add logic to call _add_labels for inset_data on ax_inset if needed
 
         # --- Final Touches ---
         if 'tight_layout_rect' in fig_config:

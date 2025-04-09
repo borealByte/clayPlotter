@@ -47,7 +47,7 @@ main_map_settings:
 
 # --- Styling ---
 styling:
-  cmap: 'YlOrRd' # Default colormap for data values (using viridis)
+  cmap: 'bwr_r' # Default colormap for data values (red, white, blue) reverse
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
   lake_edge_color: 'darkgrey'
@@ -70,18 +70,18 @@ label_settings:
   value_format: "{:.0f}" # Format string for the value part of the label (e.g., "{:.0f}" for integer)
   label_format: "{code} - {value}" # Format string for the full label text
   na_value_text: "N/A" # Text to display if value is missing
-  label_fontsize: 6 # Slightly smaller labels
-  annotation_fontsize: 6
+  label_fontsize: 8 # Increased label size
+  annotation_fontsize: 8 # Increased annotation size
   label_bbox_style: # Settings for matplotlib.text.Text.set_bbox
-    boxstyle: "round,pad=0.1"
+    boxstyle: "round,pad=0.3" # Use round boxstyle with more padding
     fc: "white"
-    ec: "none"
-    alpha: 0.7 # Semi-transparent label background
+    ec: "darkgrey" # Add a subtle edge color
+    alpha: 0.8 # Slightly less transparent
   annotation_bbox_style: # Settings for annotation bbox
-    boxstyle: "round,pad=0.1"
+    boxstyle: "round,pad=0.3" # Use round boxstyle with more padding
     fc: "white"
-    ec: "none"
-    alpha: 0.7 # Semi-transparent annotation background
+    ec: "darkgrey" # Add a subtle edge color
+    alpha: 0.8 # Slightly less transparent
   annotation_arrowprops: # Settings for annotation arrow
     arrowstyle: "-"
     color: 'gray'
