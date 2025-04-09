@@ -23,6 +23,7 @@ GEOGRAPHY_LAYERS = {
     "world_countries": "ne_50m_admin_0_countries",
     "ne_lakes": "ne_50m_lakes",
     "admin1_10m": "ne_10m_admin_1_states_provinces", # Added 10m Admin 1 layer
+    "china_provinces": "ne_10m_admin_1_states_provinces", # Use detailed layer, filter in plotter
     # Add other layers as needed
 }
 
