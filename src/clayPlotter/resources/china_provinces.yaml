@@ -2,7 +2,7 @@
 # Based on canada_provinces.yaml
 
 # --- Data Selection ---
-country_codes: ['CN'] # ISO A2 code for China
+country_codes: ['CN',] # ISO A2 code for China
 
 # Level 1 admin codes (e.g., Chinese province names or codes) for the main map viewport
 # Set to null to plot all level 1 regions within the country_codes by default.
@@ -21,7 +21,7 @@ main_map_settings:
   target_crs: 'ESRI:102025' # Use Asia North Albers Equal Area Conic projection
   include_lakes: true # Plot lakes on the main map (if available in the lakes layer)
   include_neighboring_countries: true # Plot neighboring countries (e.g., RU, IN, MN, PK, NP, BT, MM, LA, VN, KP)
-  include_neighboring_level1: false # Plot neighboring L1 regions (optional, can be noisy)
+  include_neighboring_level1: true # Plot neighboring L1 regions (set to true)
   # List specific lakes if needed, otherwise relies on the default lakes layer
   include_lake_names: []
 
@@ -97,4 +97,5 @@ data_hints:
   neighboring_country_codes: ['RU', 'MN', 'KZ', 'KG', 'TJ', 'AF', 'PK', 'IN', 'NP', 'BT', 'MM', 'LA', 'VN', 'KP', 'KR'] # ISO A2 codes
   # Verify column name in the countries shapefile
   neighboring_country_name_column: 'ADMIN' # Potential column name for country name
+  admin0_country_code_column: 'ISO_A2' # Explicitly use ISO_A2 column for matching neighbor codes
   lake_name_column: 'name' # Potential column name for lake name

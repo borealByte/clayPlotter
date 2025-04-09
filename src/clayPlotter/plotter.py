@@ -618,16 +618,20 @@ class ChoroplethPlotter:
 
                     # Clip the (potentially reprojected) other L1 regions to the map extent
                     clipped_other_l1_plot_gdf = gpd.GeoDataFrame() # Initialize for plotting
+                    logger.debug(f"Attempting to clip other L1 regions. Data CRS: {other_l1_plot_gdf.crs}. Bounds: xlim={current_xlim}, ylim={current_ylim}")
                     try:
                         if other_l1_plot_gdf.crs and other_l1_plot_gdf.crs.is_projected:
+                             logger.debug("Using projected CRS clipping method (gpd.clip).")
                              bbox_poly = Polygon([(current_xlim[0], current_ylim[0]), (current_xlim[1], current_ylim[0]), (current_xlim[1], current_ylim[1]), (current_xlim[0], current_ylim[1])])
                              # Ensure the clip box has the same CRS as the data being clipped
                              clip_box = gpd.GeoDataFrame([1], geometry=[bbox_poly], crs=other_l1_plot_gdf.crs)
+                             logger.debug(f"Clip box created with CRS: {clip_box.crs}")
                              clipped_other_l1_plot_gdf = gpd.clip(other_l1_plot_gdf, clip_box)
                         else:
+                             logger.debug("Using geographic CRS clipping method (.cx).")
                              # Use cx for geographic coordinates
                              clipped_other_l1_plot_gdf = other_l1_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
-                        logger.info(f"Clipping other L1 regions to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(other_l1_gdf)}, after clip: {len(clipped_other_l1_plot_gdf)}")
+                        logger.info(f"Clipping other L1 regions to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(other_l1_gdf)}, after clip: {len(clipped_other_l1_plot_gdf)}") # Keep this info log
                     except Exception as clip_err:
                          logger.warning(f"Could not clip other L1 regions to map extent: {clip_err}")
                          clipped_other_l1_plot_gdf = other_l1_plot_gdf # Attempt to plot unclipped if clipping fails
@@ -692,15 +696,19 @@ class ChoroplethPlotter:
                                 current_xlim = ax.get_xlim()
                                 current_ylim = ax.get_ylim()
                                 clipped_neighbor_countries_plot_gdf = gpd.GeoDataFrame() # Initialize for plotting
+                                logger.debug(f"Attempting to clip neighbor countries. Data CRS: {neighbor_countries_plot_gdf.crs}. Bounds: xlim={current_xlim}, ylim={current_ylim}")
                                 try:
                                     # Clip neighbor countries to map extent
                                     if neighbor_countries_plot_gdf.crs and neighbor_countries_plot_gdf.crs.is_projected:
+                                         logger.debug("Using projected CRS clipping method (gpd.clip) for countries.")
                                          bbox_poly = Polygon([(current_xlim[0], current_ylim[0]), (current_xlim[1], current_ylim[0]), (current_xlim[1], current_ylim[1]), (current_xlim[0], current_ylim[1])])
                                          clip_box = gpd.GeoDataFrame([1], geometry=[bbox_poly], crs=neighbor_countries_plot_gdf.crs)
+                                         logger.debug(f"Clip box created with CRS: {clip_box.crs}")
                                          clipped_neighbor_countries_plot_gdf = gpd.clip(neighbor_countries_plot_gdf, clip_box)
                                     else:
+                                         logger.debug("Using geographic CRS clipping method (.cx) for countries.")
                                          clipped_neighbor_countries_plot_gdf = neighbor_countries_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
-                                    logger.info(f"Clipping neighbor countries to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(neighbor_countries_gdf)}, after clip: {len(clipped_neighbor_countries_plot_gdf)}")
+                                    logger.info(f"Clipping neighbor countries to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(neighbor_countries_gdf)}, after clip: {len(clipped_neighbor_countries_plot_gdf)}") # Keep this info log
                                 except Exception as nc_clip_err:
                                      logger.warning(f"Could not clip neighbor countries to map extent: {nc_clip_err}")
                                      clipped_neighbor_countries_plot_gdf = neighbor_countries_plot_gdf # Attempt to plot unclipped
