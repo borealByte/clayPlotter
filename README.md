@@ -1,6 +1,4 @@
-<div style="text-align: center;">
-  <img src="clayPlotter.png" alt="clayPlotter Logo" style="width: 30%;"/>
-</div>
+<p align="center"><img src="clayPlotter.png" alt="clayPlotter Logo" width="25%"/></p>
 
 
 # 🗺️ clayPlotter: Modern Python Choropleth Mapping
