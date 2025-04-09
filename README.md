@@ -15,65 +15,126 @@ Welcome to `clayPlotter`! 👋 This project is a modern, installable Python pack
 
 Here's a minimal example of how to generate a choropleth map using `clayPlotter`:
 
-### USA Example
+### USA Example (State Admission Year)
 ```python
 import pandas as pd
 from clayPlotter import ChoroplethPlotter
 import matplotlib.pyplot as plt
- 
-# Prepare your data
-data = pd.DataFrame({
-    'State': ['California', 'Texas', 'New York', 'Florida'],
-    'Value': [10, 8, 9, 7]
-})
+
+# Prepare your data (Full USA States Admission Data)
+admission_data = {
+    'Alabama': 1819, 'Alaska': 1959, 'Arizona': 1912, 'Arkansas': 1836, 'California': 1850,
+    'Colorado': 1876, 'Connecticut': 1788, 'Delaware': 1787, 'Florida': 1845, 'Georgia': 1788,
+    'Hawaii': 1959, 'Idaho': 1890, 'Illinois': 1818, 'Indiana': 1816, 'Iowa': 1846,
+    'Kansas': 1861, 'Kentucky': 1792, 'Louisiana': 1812, 'Maine': 1820, 'Maryland': 1788,
+    'Massachusetts': 1788, 'Michigan': 1837, 'Minnesota': 1858, 'Mississippi': 1817,
+    'Missouri': 1821, 'Montana': 1889, 'Nebraska': 1867, 'Nevada': 1864, 'New Hampshire': 1788,
+    'New Jersey': 1787, 'New Mexico': 1912, 'New York': 1788, 'North Carolina': 1789,
+    'North Dakota': 1889, 'Ohio': 1803, 'Oklahoma': 1907, 'Oregon': 1859, 'Pennsylvania': 1787,
+    'Rhode Island': 1790, 'South Carolina': 1788, 'South Dakota': 1889, 'Tennessee': 1796,
+    'Texas': 1845, 'Utah': 1896, 'Vermont': 1791, 'Virginia': 1788, 'Washington': 1889,
+    'West Virginia': 1863, 'Wisconsin': 1848, 'Wyoming': 1890
+}
+location_col_usa = 'State'
+value_col_usa = 'Admission Year'
+data = pd.DataFrame(list(admission_data.items()), columns=[location_col_usa, value_col_usa])
 
 # Instantiate the plotter
 plotter = ChoroplethPlotter(
     geography_key='usa_states',
     data=data,
-    location_col='State',
-    value_col='Value'
+    location_col=location_col_usa,
+    value_col=value_col_usa
 )
 
 # Generate the plot
-fig, ax = plotter.plot(title="USA Choropleth Map")
+fig, ax = plotter.plot(title="USA State Admission Year")
 
 # Save the plot
-plt.savefig("usa_choropleth_map.png")
+plt.savefig("notebooks/my_choropleth_map_usa.png") # Ensure path matches notebook output
 plt.show()
 ```
 
 ![USA Choropleth Map](notebooks/my_choropleth_map_usa.png)
 
-### Canada Example
+### Canada Example (Province/Territory Confederation Year)
 ```python
 import pandas as pd
 from clayPlotter import ChoroplethPlotter
 import matplotlib.pyplot as plt
 
-# Prepare your data
-data = pd.DataFrame({
-    'Province': ['Ontario', 'Quebec', 'British Columbia', 'Alberta'],
-    'Value': [10, 8, 9, 7]
-})
+# Prepare your data (Full Canada Confederation Data)
+confederation_data = {
+    'Ontario': 1867, 'Québec': 1867, 'Nova Scotia': 1867, 'New Brunswick': 1867,
+    'Manitoba': 1870, 'British Columbia': 1871, 'Prince Edward Island': 1873,
+    'Saskatchewan': 1905, 'Alberta': 1905, 'Newfoundland and Labrador': 1949,
+    'Yukon': 1898, 'Northwest Territories': 1870, 'Nunavut': 1999
+}
+location_col_can = 'Province/Territory'
+value_col_can = 'Confederation Year'
+data = pd.DataFrame(list(confederation_data.items()), columns=[location_col_can, value_col_can])
 
 # Instantiate the plotter
 plotter = ChoroplethPlotter(
     geography_key='canada_provinces',
     data=data,
-    location_col='Province',
-    value_col='Value'
+    location_col=location_col_can,
+    value_col=value_col_can
 )
 
 # Generate the plot
-fig, ax = plotter.plot(title="Canada Choropleth Map")
+fig, ax = plotter.plot(title="Canadian Province/Territory Confederation Year")
 
 # Save the plot
-plt.savefig("canada_choropleth_map.png")
+plt.savefig("notebooks/my_choropleth_map_canada.png") # Ensure path matches notebook output
 plt.show()
 ```
 
 ![Canada Choropleth Map](notebooks/my_choropleth_map_canada.png)
+
+### China Example (Province Population Approx. 2020/21)
+```python
+import pandas as pd
+from clayPlotter import ChoroplethPlotter
+import matplotlib.pyplot as plt
+
+# Prepare your data (China Province Population Data)
+china_population_data = {
+    'Beijing': 21500000, 'Tianjin': 13900000, 'Hebei': 74600000, 'Shanxi': 34900000,
+    'Inner Mongolia': 24000000, 'Liaoning': 42600000, 'Jilin': 24000000, 'Heilongjiang': 31800000,
+    'Shanghai': 24900000, 'Jiangsu': 84800000, 'Zhejiang': 64600000, 'Anhui': 61000000,
+    'Fujian': 41500000, 'Jiangxi': 45200000, 'Shandong': 101500000, 'Henan': 99400000,
+    'Hubei': 57800000, 'Hunan': 66400000, 'Guangdong': 126000000, 'Guangxi': 50100000,
+    'Hainan': 10100000, 'Chongqing': 32100000, 'Sichuan': 83600000, 'Guizhou': 38500000,
+    'Yunnan': 47200000, 'Tibet': 3600000, 'Shaanxi': 39500000, 'Gansu': 25000000,
+    'Qinghai': 5900000, 'Ningxia': 7200000, 'Xinjiang': 25900000
+}
+location_col_chn = 'Province'
+value_col_chn = 'Population'
+data = pd.DataFrame(list(china_population_data.items()), columns=[location_col_chn, value_col_chn])
+
+# Instantiate the plotter
+# Assumes shapefile join column is 'name_en' as potentially defined in china_provinces.yaml
+geo_join_col_chn = 'name_en'
+plotter = ChoroplethPlotter(
+    geography_key='china_provinces',
+    data=data,
+    location_col=location_col_chn,
+    value_col=value_col_chn
+)
+
+# Generate the plot
+fig, ax = plotter.plot(
+    title="China Province Population (Approx. 2020/21)",
+    geo_join_column=geo_join_col_chn # Specify the column in the GeoDataFrame to join on
+)
+
+# Save the plot
+plt.savefig("notebooks/my_choropleth_map_china.png") # Ensure path matches notebook output
+plt.show()
+```
+
+![China Choropleth Map](notebooks/my_choropleth_map_china.png)
 
 ## 🔮 Future Plans
 

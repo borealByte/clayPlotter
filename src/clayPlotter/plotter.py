@@ -382,7 +382,8 @@ class ChoroplethPlotter:
         fig, ax = plt.subplots(1, 1, figsize=fig_config.get('figsize', (10, 10)))
         plot_title = title if title is not None else fig_config.get('title', f"Choropleth Map ({self.geography_key})")
         title_fontsize = fig_config.get('title_fontsize', 12) # Default to 12 if not specified
-        fig.suptitle(plot_title, fontsize=title_fontsize, y=0.94) # Lowered y position further
+        title_y = fig_config.get('title_y', 0.98) # Get title y position from config, default to 0.98
+        fig.suptitle(plot_title, fontsize=title_fontsize, y=title_y)
 
         # Set main map background (Limits and aspect ratio applied *after* potential reprojection)
         ax.set_facecolor(style_config.get('ocean_color', 'aliceblue'))
@@ -820,11 +821,17 @@ class ChoroplethPlotter:
 
 
         # --- Final Touches ---
-        # Use tight_layout without rect first for automatic adjustment
+        # Apply tight_layout with rect from configuration if available
         try:
-            fig.tight_layout()
+            tight_layout_rect = fig_config.get('tight_layout_rect')
+            if tight_layout_rect:
+                logger.info(f"Applying tight_layout with rect: {tight_layout_rect}")
+                fig.tight_layout(rect=tight_layout_rect)
+            else:
+                logger.info("Applying default tight_layout")
+                fig.tight_layout()
         except Exception as e:
-                  logger.warning(f"Failed to apply tight_layout: {e}")
+            logger.warning(f"Failed to apply tight_layout: {e}")
 
         logger.info("Plot generation complete.")
         return fig, ax
