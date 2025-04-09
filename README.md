@@ -133,6 +133,50 @@ plt.show()
 ```
 
 ![China Choropleth Map](notebooks/my_choropleth_map_china.png)
+### Brazil Example (State Population Approx. 2023)
+```python
+import pandas as pd
+from clayPlotter import ChoroplethPlotter
+import matplotlib.pyplot as plt
+
+# Prepare your data (Approx. Brazil State Population 2023)
+brazil_population_data = {
+    'Acre': 930000, 'Alagoas': 3100000, 'Amapá': 880000, 'Amazonas': 3900000,
+    'Bahia': 14100000, 'Ceará': 8800000, 'Distrito Federal': 2800000, 'Espírito Santo': 3800000,
+    'Goiás': 7100000, 'Maranhão': 6800000, 'Mato Grosso': 3700000, 'Mato Grosso do Sul': 2800000,
+    'Minas Gerais': 20500000, 'Pará': 8100000, 'Paraíba': 4000000, 'Paraná': 11400000,
+    'Pernambuco': 9000000, 'Piauí': 3300000, 'Rio de Janeiro': 16100000, 'Rio Grande do Norte': 3300000,
+    'Rio Grande do Sul': 10900000, 'Rondônia': 1600000, 'Roraima': 630000, 'Santa Catarina': 7600000,
+    'São Paulo': 44400000, 'Sergipe': 2300000, 'Tocantins': 1600000
+}
+location_col_bra = 'State'
+value_col_bra = 'Population'
+data = pd.DataFrame(list(brazil_population_data.items()), columns=[location_col_bra, value_col_bra])
+
+# Instantiate the plotter
+# Assumes shapefile join column is 'name' as potentially defined in brazil_states.yaml
+geo_join_col_bra = 'name'
+plotter = ChoroplethPlotter(
+    geography_key='brazil_states',
+    data=data,
+    location_col=location_col_bra,
+    value_col=value_col_bra
+)
+
+# Generate the plot
+fig, ax = plotter.plot(
+    title="Brazil State Population (Approx. 2023)",
+    geo_join_column=geo_join_col_bra # Specify the column in the GeoDataFrame to join on
+)
+
+# Save the plot
+plt.savefig("notebooks/my_choropleth_map_brazil.png") # Ensure path matches notebook output
+plt.show()
+```
+
+![Brazil Choropleth Map](notebooks/my_choropleth_map_brazil.png)
+
+
 
 ## 🔮 Future Plans
 
