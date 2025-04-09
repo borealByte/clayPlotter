@@ -1,0 +1,102 @@
+# Configuration for plotting choropleth maps, adapted for Chinese Provinces
+# Based on canada_provinces.yaml
+
+# --- Data Selection ---
+country_codes: ['CN',] # ISO A2 code for China
+
+# Level 1 admin codes (e.g., Chinese province names or codes) for the main map viewport
+# Set to null to plot all level 1 regions within the country_codes by default.
+# Or list specific codes if needed, e.g., ['Beijing', 'Shanghai', 'Guangdong']
+# The exact codes depend on the 'level1_code_column' used below and the shapefile data.
+main_level1_codes: null
+
+# --- Inset Regions ---
+# No standard insets typically needed for mainland China.
+inset_level1_regions: []
+
+# --- Main Map View Settings ---
+main_map_settings:
+  # xlim/ylim removed to let GeoPandas determine extent initially
+  # target_crs: 'EPSG:4479' # China Geodetic Coordinate System 2000 - A common geographic CRS for China
+  target_crs: 'ESRI:102025' # Use Asia North Albers Equal Area Conic projection
+  include_lakes: true # Plot lakes on the main map (if available in the lakes layer)
+  include_neighboring_countries: true # Plot neighboring countries (e.g., RU, IN, MN, PK, NP, BT, MM, LA, VN, KP)
+  include_neighboring_level1: true # Plot neighboring L1 regions (set to true)
+  # List specific lakes if needed, otherwise relies on the default lakes layer
+  include_lake_names: []
+
+# --- Styling ---
+styling:
+  cmap: ['#FF0000', '#FFCCCC', '#FFFFFF'] # Reverted: Red -> Pink -> White colormap
+  missing_color: 'lightgrey'
+  lake_color: 'aliceblue'
+  lake_edge_color: 'darkgrey'
+  lake_linewidth: 0.3
+  level1_edge_color: 'darkgrey'
+  level1_linewidth: 0.5
+  country_color: 'lightgrey' # Fill color for neighboring countries
+  country_edge_color: 'darkgrey'
+  country_linewidth: 0.5
+  neighbor_l1_edgecolor: 'darkgrey'
+  neighbor_l1_linewidth: 0.5
+  neighbor_l1_linestyle: '--'
+  neighbor_l1_fill_color: 'lightgrey'
+  ocean_color: 'aliceblue' # Background color for the axes
+
+# --- Label Settings ---
+label_settings:
+  add_labels: true
+  # IMPORTANT: Verify the correct column name from the shapefile (admin1_10m likely)
+  # Common possibilities: 'name', 'name_en', 'iso_3166_2', 'HASC_1', 'gn_name'
+  level1_code_column: 'name_en' # Guessing English name column
+  value_format: "{:.0f}" # Format for integer values (e.g., year)
+  label_format: "{code}" # Simpler label format, just the code/name
+  na_value_text: "N/A"
+  label_fontsize: 6 # Smaller font size for potentially many provinces
+  annotation_fontsize: 6
+  label_bbox_style:
+    boxstyle: "round,pad=0.2"
+    fc: "white"
+    ec: "darkgrey"
+    alpha: 0.7
+  annotation_bbox_style:
+    boxstyle: "round,pad=0.2"
+    fc: "white"
+    ec: "darkgrey"
+    alpha: 0.7
+  annotation_arrowprops:
+    arrowstyle: "-"
+    color: 'gray'
+    lw: 0.5
+
+  # Define offsets for small/overlapping regions if needed (requires knowing codes and projection)
+  offsets: {}
+    # e.g., 'HKG': [lon_offset, lat_offset] # Assuming HASC_1 codes
+
+  # Define clipping for complex shapes if needed
+  clipped_regions: {}
+
+  # Special handling for inset labels (if any)
+  inset_label_handling: {}
+
+# --- Figure Settings ---
+figure:
+  figsize: [12, 12] # More square figsize to reduce whitespace
+  title: 'China Province Data' # Generic title, override in plot call
+  title_fontsize: 20 # Increased font size
+  tight_layout_rect: [0.05, 0.05, 0.95, 0.95] # Balanced margin for title
+  title_y: 0.96 # Position title closer to the map but not overlapping
+
+# --- Data Loading/Preparation Hints (Informational) ---
+data_hints:
+  geopackage_layer: 'ne_50m_admin_1_states_provinces' # Use 50m layer for potentially better coverage
+  # Verify these column names based on the actual shapefile used by GeoDataManager
+  level1_name_column: 'name_en' # Expected column name for L1 region name (English)
+  level1_code_column: 'iso_3166_2' # Expected column name for L1 region code (e.g., CN-BJ) - Use this for joining?
+  country_code_column: 'iso_a2' # Expected column name for country ISO code in L1 shapefile
+  # List potential neighbors based on geography
+  neighboring_country_codes: ['RU', 'MN', 'KZ', 'KG', 'TJ', 'AF', 'PK', 'IN', 'NP', 'BT', 'MM', 'LA', 'VN', 'KP', 'KR'] # ISO A2 codes
+  # Verify column name in the countries shapefile
+  neighboring_country_name_column: 'ADMIN' # Potential column name for country name
+  admin0_country_code_column: 'ISO_A2' # Explicitly use ISO_A2 column for matching neighbor codes
+  lake_name_column: 'name' # Potential column name for lake name

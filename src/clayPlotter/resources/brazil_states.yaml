@@ -1,0 +1,83 @@
+# Configuration for plotting choropleth maps for Brazil States
+country_codes: ['BR'] # ISO A2 code for Brazil
+
+# Level 1 admin codes (e.g., Brazilian state codes like BR-SP)
+# If empty or not provided, the plotter should attempt to include all L1 regions for the primary country_codes.
+main_level1_codes: []
+
+# --- Inset Regions ---
+# No insets defined for Brazil initially
+inset_level1_regions: []
+
+# --- Main Map View Settings ---
+main_map_settings:
+  xlim: [-80, -30]  # Adjusted longitude limits for Brazil and neighbors
+  ylim: [-35, 10]   # Adjusted latitude limits for Brazil and neighbors
+  target_crs: 'EPSG:4326' # Use WGS 84 Plate Carree projection
+  include_lakes: false # Brazil doesn't have prominent lakes like the Great Lakes needing special handling
+  include_neighboring_countries: true # Plot neighboring countries
+  include_neighboring_level1: true # Plot neighboring L1 regions (e.g., Argentinian provinces)
+  # include_lake_names: [] # No specific lakes to plot by name
+
+# --- Styling ---
+styling:
+  cmap: 'YlGnBu' # Colormap approximating Brazil flag (Yellow-Green-Blue)
+  missing_color: 'lightgrey'
+  # lake_color: 'aliceblue' # Not applicable if include_lakes is false
+  # lake_edge_color: 'darkgrey'
+  # lake_linewidth: 0.3
+  level1_edge_color: 'black' # Border for Brazilian states (from original config)
+  level1_linewidth: 0.5      # (from original config)
+  country_color: 'whitesmoke' # Fill color for neighboring countries (from original config)
+  country_edge_color: 'darkgrey' # (from original config)
+  country_linewidth: 0.3       # (from original config)
+  neighbor_l1_edgecolor: 'darkgrey' # Edge color for neighboring L1 regions
+  neighbor_l1_linewidth: 0.3
+  neighbor_l1_linestyle: '--'      # Dashed lines for neighbor L1 borders
+  neighbor_l1_fill_color: 'whitesmoke' # Fill color for neighboring L1 regions (same as country)
+  ocean_color: 'aliceblue' # Background color for the axes (ocean)
+
+# --- Label Settings ---
+label_settings:
+  add_labels: true # Enable labels for states
+  level1_code_column: 'iso_3166_2' # Column name in the GeoDataFrame holding the L1 code (e.g., 'BR-SP') - Assuming this column exists
+  value_format: "{:.0f}" # Format string for the value part of the label
+  label_format: "{code} - {value}" # Format string for the full label text
+  na_value_text: "N/A" # Text to display if value is missing
+  label_fontsize: 6 # (from original config)
+  annotation_fontsize: 6
+  label_bbox_style:
+    boxstyle: "round,pad=0.2"
+    fc: "white"
+    ec: "darkgrey"
+    alpha: 0.7
+  annotation_bbox_style:
+    boxstyle: "round,pad=0.2"
+    fc: "white"
+    ec: "darkgrey"
+    alpha: 0.7
+  annotation_arrowprops:
+    arrowstyle: "-"
+    color: 'gray'
+    lw: 0.5
+  offsets: {} # No specific offsets defined initially
+  clipped_regions: {} # No specific clipping defined initially
+  inset_label_handling: {} # No insets
+
+# --- Figure Settings ---
+figure:
+  figsize: [12, 10] # Adjusted figure size
+  title: 'Brazil Level 1 Admin Choropleth' # More specific default title
+  title_fontsize: 16
+  tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
+
+# --- Data Loading/Preparation Hints (Informational) ---
+data_hints:
+  geopackage_layer: 'ne_50m_admin_1_states_provinces' # Layer for primary L1 data AND neighbors
+  level1_name_column: 'name' # Expected column name for L1 admin region name
+  level1_code_column: 'iso_3166_2' # Expected column name for L1 admin region code (e.g., 'BR-SP')
+  country_code_column: 'iso_a2' # Expected column name for country ISO A2 code in L1 shapefile
+  neighboring_country_codes: ['AR', 'BO', 'CO', 'GF', 'GY', 'PY', 'PE', 'SR', 'UY', 'VE'] # ISO A2 codes
+  # neighboring_country_name_column: 'ADMIN' # Not needed if using L1 layer for neighbors
+  # lake_name_column: 'name' # Not applicable
+  # great_lakes_names: [] # Not applicable

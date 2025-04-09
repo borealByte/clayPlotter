@@ -46,7 +46,8 @@ def test_get_geodataframe_loads_layer(mock_ensure_gpkg, mock_gpd_read):
     # --- Test Execution ---
     manager = GeoDataManager(cache_dir=TEST_CACHE_DIR)
     # Assume a method get_geodataframe orchestrates getting and reading
-    gdf = manager.get_geodataframe(TEST_GEOGRAPHY_KEY)
+    # Pass the layer name directly, as the method signature changed
+    gdf = manager.get_geodataframe(layer_name=EXPECTED_LAYER_NAME)
 
     # --- Assertions ---
     # 1. Check that _ensure_geopackage_available was called

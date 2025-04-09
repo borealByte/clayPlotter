@@ -27,7 +27,7 @@ main_map_settings:
 # --- Styling ---
 # Inherited from usa_states.yaml, adjust as needed
 styling:
-  cmap: 'YlOrRd' # Match USA styling
+  cmap: ['#FF0000', '#FFE5E5', '#FFF8F8', '#FFFFFF'] # Custom 5-stop colormap: Red -> Pinks -> White
   missing_color: 'lightgrey'
   lake_color: 'aliceblue'
   lake_edge_color: 'darkgrey'
@@ -51,18 +51,18 @@ label_settings:
   value_format: "{:.0f}" # Format string for the value part of the label (e.g., "{:.0f}" for integer year)
   label_format: "{code} - {value}" # Format string for the full label text
   na_value_text: "N/A" # Text to display if value is missing
-  label_fontsize: 7
-  annotation_fontsize: 6
+  label_fontsize: 8 # Increased label size
+  annotation_fontsize: 8 # Increased annotation size
   label_bbox_style: # Settings for matplotlib.text.Text.set_bbox
-    boxstyle: "round,pad=0.1"
+    boxstyle: "round,pad=0.3" # Use round boxstyle with more padding
     fc: "white"
-    ec: "none"
-    alpha: 0.6
+    ec: "darkgrey" # Add a subtle edge color
+    alpha: 0.8 # Slightly less transparent
   annotation_bbox_style: # Settings for annotation bbox
-    boxstyle: "round,pad=0.1"
+    boxstyle: "round,pad=0.3" # Use round boxstyle with more padding
     fc: "white"
-    ec: "none"
-    alpha: 0.7
+    ec: "darkgrey" # Add a subtle edge color
+    alpha: 0.8 # Slightly less transparent
   annotation_arrowprops: # Settings for annotation arrow
     arrowstyle: "-"
     color: 'gray'
@@ -87,11 +87,13 @@ label_settings:
 figure:
   figsize: [15, 12] # Adjusted figsize slightly for Canada's shape
   title: 'Canadian Province Confederation Year' # Updated title
+  title_fontsize: 20 # Increased font size for the title
   tight_layout_rect: [0, 0.03, 1, 0.95] # Arguments for plt.tight_layout
 
 # --- Data Loading/Preparation Hints (Informational) ---
 # These are not directly used by the plotting function but help understand data needs
 data_hints:
+  geopackage_layer: 'ne_50m_admin_1_states_provinces' # Layer for primary Canada provinces data
   level1_name_column: 'name' # Expected column name for L1 admin region name (e.g., 'name' for CA provinces) - VERIFY THIS
   level1_code_column: 'postal' # Expected column name for L1 admin region code (e.g., 'postal' for CA provinces) - VERIFY THIS
   country_code_column: 'iso_a2' # Expected column name for country ISO code in L1 shapefile

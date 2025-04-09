@@ -3,7 +3,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, LinearSegmentedColormap, to_rgba
 from matplotlib import cm
 from pathlib import Path
 import yaml
@@ -15,7 +15,7 @@ from shapely.ops import transform
 # import pyproj # For coordinate transformations if needed for offsets - Keep commented for now
 
 # Import dependencies
-from .geo_data_manager import GeoDataManager, GEOGRAPHY_LAYERS
+from .geo_data_manager import GeoDataManager # GEOGRAPHY_LAYERS removed
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,7 @@ class ChoroplethPlotter:
 
         Args:
             geography_key: The key identifying the geographic dataset and configuration
-                           (e.g., 'usa_states'). Must correspond to a layer key in
-                           GeoDataManager.GEOGRAPHY_LAYERS and a config file in resources.
+                           (e.g., 'usa_states'). Must correspond to a config file in resources.
             data: User data as a Pandas DataFrame.
             location_col: The column in the user data used for joining with geo data (e.g., 'State').
             value_col: The column in the user data containing values to plot (e.g., 'Value').
@@ -59,9 +58,8 @@ class ChoroplethPlotter:
         # Instantiate GeoDataManager internally
         self.geo_manager = GeoDataManager(cache_dir=cache_dir)
 
-        # Validate the geography_key exists in the layer mapping constant
-        if self.geography_key not in GEOGRAPHY_LAYERS:
-            raise ValueError(f"Unknown geography_key: '{self.geography_key}'. Available keys: {list(GEOGRAPHY_LAYERS.keys())}")
+        # Validation of geography_key happens when loading the config file
+        # Validation of the layer name happens in GeoDataManager
 
         # Load the plotting configuration YAML based on the key
         self.plot_config = self._load_plot_config(self.geography_key)
@@ -84,6 +82,9 @@ class ChoroplethPlotter:
                 config = yaml.safe_load(f)
                 if not isinstance(config, dict):
                     raise TypeError(f"Configuration file '{config_filename}' did not load as a dictionary.")
+                # Validate that the required layer name is present
+                if 'data_hints' not in config or 'geopackage_layer' not in config['data_hints']:
+                     raise ValueError(f"Configuration '{config_filename}' is missing 'data_hints.geopackage_layer'.")
                 logger.info(f"Successfully loaded plot configuration for key '{config_key}'")
                 return config
         except FileNotFoundError as e:
@@ -100,17 +101,22 @@ class ChoroplethPlotter:
         """
         Prepares data for plotting by merging geographical data with user data.
         """
-        logger.debug(f"Preparing data for key '{self.geography_key}' using join column '{geo_join_column}'")
-        # Retrieve the base geographical data using the stored key
+        logger.debug(f"Preparing data for geography '{self.geography_key}' using join column '{geo_join_column}'")
+        layer_name = None # Initialize for error logging
+        # Retrieve the base geographical data using the layer name from config
         try:
-            geo_df = self.geo_manager.get_geodataframe(geography_key=self.geography_key)
-            logger.debug(f"Loaded GeoDataFrame with {len(geo_df)} features.")
+            layer_name = self.plot_config.get('data_hints', {}).get('geopackage_layer')
+            if not layer_name:
+                 raise ValueError(f"Missing 'geopackage_layer' in 'data_hints' for config '{self.geography_key}'")
+            logger.info(f"Loading primary layer '{layer_name}' for geography '{self.geography_key}'")
+            geo_df = self.geo_manager.get_geodataframe(layer_name=layer_name)
+            logger.debug(f"Loaded primary GeoDataFrame with {len(geo_df)} features.")
         except (ValueError, FileNotFoundError, RuntimeError, Exception) as e:
-            logger.error(f"Failed to load geographic data for key '{self.geography_key}'", exc_info=True)
-            raise ValueError(f"Failed to load geographic data for key '{self.geography_key}': {e}") from e
+            logger.error(f"Failed to load primary geographic data (layer: {layer_name}) for key '{self.geography_key}'", exc_info=True)
+            raise ValueError(f"Failed to load primary geographic data (layer: {layer_name}) for key '{self.geography_key}': {e}") from e
 
         if not isinstance(geo_df, gpd.GeoDataFrame):
-             raise TypeError(f"GeoDataManager did not return a GeoDataFrame for key '{self.geography_key}'.")
+             raise TypeError(f"GeoDataManager did not return a GeoDataFrame for layer '{layer_name}'.")
 
         # Validate columns exist before merging
         if geo_join_column not in geo_df.columns:
@@ -281,6 +287,65 @@ class ChoroplethPlotter:
             except Exception as label_err:
                  logger.error(f"Failed to add label/annotation for code '{code}': {label_err}", exc_info=True)
 
+    # --- Inset Labeling Helper Method ---
+    def _add_inset_labels(self, gdf: gpd.GeoDataFrame, ax: Axes, label_config: dict, level1_code_col: str | None):
+        """Adds simplified labels to an inset map axis."""
+        logger.info("Adding labels to inset axis...")
+        if not label_config.get('add_labels', False) or not level1_code_col or level1_code_col not in gdf.columns:
+            logger.info("Inset labeling skipped: 'add_labels' is false, 'level1_code_column' is not defined, or column not found.")
+            return
+
+        # --- Get Basic Label Settings ---
+        value_format = label_config.get('value_format', "{:.0f}")
+        label_format = label_config.get('label_format', "{code} - {value}")
+        na_value_text = label_config.get('na_value_text', "N/A")
+        label_fontsize = label_config.get('label_fontsize', 7) # Use main label font size for consistency
+        label_bbox_style = label_config.get('label_bbox_style', None)
+
+        # --- Iterate and Add Simple Labels ---
+        for idx, row in gdf.iterrows():
+            if level1_code_col not in row or pd.isna(row[level1_code_col]):
+                logger.warning(f"Skipping inset label for row index {idx}: Missing or invalid code.")
+                continue
+            code = str(row[level1_code_col]).strip()
+
+            if self.value_col not in row:
+                 logger.warning(f"Skipping inset label for code '{code}': Value column '{self.value_col}' not found.")
+                 continue
+            value = row[self.value_col]
+            geometry = row['geometry']
+
+            if pd.isna(geometry):
+                logger.warning(f"Skipping inset label for code '{code}': Missing geometry.")
+                continue
+
+            # Format label text
+            value_str = na_value_text if pd.isna(value) else value_format.format(value)
+            label_text = label_format.format(code=code, value=value_str)
+
+            # Determine placement point (representative_point)
+            try:
+                if not geometry.is_valid:
+                    geometry = geometry.buffer(0)
+                    if not geometry.is_valid:
+                         logger.warning(f"Skipping inset label for code '{code}': Invalid geometry.")
+                         continue
+                placement_point = geometry.representative_point()
+                place_x, place_y = placement_point.x, placement_point.y
+            except Exception as e:
+                logger.warning(f"Skipping inset label for code '{code}': Error calculating representative point - {e}")
+                continue
+
+            # --- Add Text Directly (No Offsets/Clipping) ---
+            try:
+                logger.debug(f"Applying default placement for inset label code '{code}'.")
+                ax.text(place_x, place_y, label_text,
+                        fontsize=label_fontsize, ha='center', va='center',
+                        bbox=label_bbox_style)
+            except Exception as label_err:
+                 logger.error(f"Failed to add inset label for code '{code}': {label_err}", exc_info=True)
+
+
     # --- Plotting Method ---
     def plot(self, geo_join_column: str = 'name', title: str | None = None, **kwargs) -> tuple[plt.Figure, Axes]:
         """
@@ -316,7 +381,9 @@ class ChoroplethPlotter:
         # --- Create Figure and Main Axes ---
         fig, ax = plt.subplots(1, 1, figsize=fig_config.get('figsize', (10, 10)))
         plot_title = title if title is not None else fig_config.get('title', f"Choropleth Map ({self.geography_key})")
-        fig.suptitle(plot_title) # Use suptitle for overall figure
+        title_fontsize = fig_config.get('title_fontsize', 12) # Default to 12 if not specified
+        title_y = fig_config.get('title_y', 0.98) # Get title y position from config, default to 0.98
+        fig.suptitle(plot_title, fontsize=title_fontsize, y=title_y)
 
         # Set main map background (Limits and aspect ratio applied *after* potential reprojection)
         ax.set_facecolor(style_config.get('ocean_color', 'aliceblue'))
@@ -324,9 +391,43 @@ class ChoroplethPlotter:
         ax.set_yticks([])
 
         # --- Define Base Plotting Arguments from Config ---
+        # Handle colormap definition (string name or list of colors)
+        cmap_config = style_config.get('cmap', 'viridis')
+        cmap_to_use = None # Initialize
+
+        if isinstance(cmap_config, str):
+            # Standard matplotlib colormap name
+            logger.info(f"Using standard matplotlib colormap: '{cmap_config}'")
+            cmap_to_use = cmap_config
+        elif isinstance(cmap_config, list):
+            # Attempt to create a custom LinearSegmentedColormap from the list
+            logger.info(f"Attempting to create custom colormap from list: {cmap_config}")
+            try:
+                # Validate list is not empty and contains strings (basic check)
+                if not cmap_config or not all(isinstance(c, str) for c in cmap_config):
+                     raise ValueError("Colormap list must contain color strings.")
+
+                # Convert color strings to RGBA tuples for the colormap
+                colors_rgba = [to_rgba(c) for c in cmap_config]
+
+                # Create the custom colormap
+                custom_cmap_name = f"custom_cmap_{'_'.join(c.strip('#') for c in cmap_config)}" # Generate a name
+                cmap_to_use = LinearSegmentedColormap.from_list(custom_cmap_name, colors_rgba)
+                logger.info(f"Successfully created custom colormap '{custom_cmap_name}'.")
+            except ValueError as ve: # Catches invalid color strings from to_rgba or our validation
+                 logger.error(f"Invalid color format or list structure in custom cmap definition: {cmap_config}. Error: {ve}. Falling back to 'viridis'.", exc_info=True)
+                 cmap_to_use = 'viridis' # Fallback
+            except Exception as cmap_err:
+                 logger.error(f"Failed to create custom colormap from list {cmap_config}: {cmap_err}. Falling back to 'viridis'.", exc_info=True)
+                 cmap_to_use = 'viridis' # Fallback
+        else:
+            # Invalid type in config
+            logger.warning(f"Invalid type for 'cmap' in configuration: {type(cmap_config)}. Expected string or list. Falling back to 'viridis'.")
+            cmap_to_use = 'viridis'
+
         base_plot_kwargs = {
             'column': self.value_col,
-            'cmap': style_config.get('cmap', 'viridis'),
+            'cmap': cmap_to_use, # Use the determined colormap (string name or object)
             'linewidth': style_config.get('level1_linewidth', 0.5),
             'edgecolor': style_config.get('level1_edge_color', '0.8'),
             'missing_kwds': {
@@ -401,7 +502,8 @@ class ChoroplethPlotter:
 
         except Exception as filter_err:
              logger.error(f"Error during main GDF filtering: {filter_err}", exc_info=True)
-             main_gdf = merged_gdf # Fallback for now
+             # Fallback or re-raise depending on desired behavior
+             raise RuntimeError("Failed during main GDF filtering and reprojection.") from filter_err
 
         # --- Plot Main Data ---
         if not main_gdf.empty:
@@ -418,10 +520,16 @@ class ChoroplethPlotter:
                   ax.set_xlim(minx - x_buffer, maxx + x_buffer)
                   ax.set_ylim(miny - y_buffer, maxy + y_buffer)
                   logger.info(f"Set projected map limits based on data bounds: xlim=({minx-x_buffer}, {maxx+x_buffer}), ylim=({miny-y_buffer}, {maxy+y_buffer})")
-             elif 'xlim' in main_map_config: # Use config limits for non-projected maps
+             elif 'xlim' in main_map_config and 'ylim' in main_map_config: # Use config limits for non-projected maps
                   ax.set_xlim(main_map_config['xlim'])
-             elif 'ylim' in main_map_config:
                   ax.set_ylim(main_map_config['ylim'])
+             else:
+                  # If no limits specified and not projected, let matplotlib decide or use total_bounds
+                  logger.info("No explicit limits set for non-projected map, using automatic bounds.")
+                  # Optionally set limits based on total_bounds even for geographic
+                  # minx, miny, maxx, maxy = main_gdf.total_bounds
+                  # ax.set_xlim(minx, maxx)
+                  # ax.set_ylim(miny, maxy)
         else:
              logger.warning("Main GeoDataFrame is empty after filtering/reprojection, skipping main plot.")
 
@@ -432,7 +540,8 @@ class ChoroplethPlotter:
         if main_map_config.get('include_lakes', False):
             logger.info("Plotting lakes...")
             try:
-                lakes_gdf = self.geo_manager.get_geodataframe(geography_key='ne_lakes')
+                # Use specific layer name for lakes
+                lakes_gdf = self.geo_manager.get_geodataframe(layer_name='ne_50m_lakes')
                 lake_names_to_plot = main_map_config.get('include_lake_names')
                 lake_name_col = self.plot_config.get('data_hints', {}).get('lake_name_column', 'name')
 
@@ -440,7 +549,7 @@ class ChoroplethPlotter:
                     lakes_to_plot = lakes_gdf[lakes_gdf[lake_name_col].isin(lake_names_to_plot)]
                     logger.info(f"Filtered to plot {len(lakes_to_plot)} specific lakes.")
                 else:
-                    lakes_to_plot = lakes_gdf
+                    lakes_to_plot = lakes_gdf # Plot all lakes if no specific names given
                     if lake_names_to_plot:
                          logger.warning(f"Could not filter lakes by name: Column '{lake_name_col}' not found.")
 
@@ -465,72 +574,87 @@ class ChoroplethPlotter:
                         color=style_config.get('lake_color', 'lightblue'),
                         edgecolor=style_config.get('lake_edge_color', 'grey'),
                         linewidth=style_config.get('lake_linewidth', 0.3),
-                        zorder=2
+                        zorder=2 # Ensure lakes are plotted above L1 regions/countries
                     )
             except Exception as e:
                 logger.error(f"Failed to load or plot lakes: {e}", exc_info=True)
 
-        # --- Plot Neighboring Level 1 Regions (if configured) ---
+        # --- Plot Other Level 1 Regions within Bounds (if configured) ---
         if main_map_config.get('include_neighboring_level1', False):
-            logger.info("Plotting neighboring level 1 regions...")
+            logger.info("Plotting other level 1 regions within map bounds...")
             try:
-                neighbor_codes = self.plot_config.get('data_hints', {}).get('neighboring_country_codes', [])
+                # Use specific layer name for detailed admin1 boundaries
+                all_admin1_gdf = self.geo_manager.get_geodataframe(layer_name="ne_10m_admin_1_states_provinces")
                 country_code_col = self.plot_config.get('data_hints', {}).get('country_code_column', 'iso_a2')
+                primary_country_codes = self.plot_config.get('country_codes', [])
 
-                if neighbor_codes:
-                    # Fetch the more detailed 10m admin 1 layer for neighbors
-                    base_admin1_gdf = self.geo_manager.get_geodataframe(geography_key="admin1_10m")
-
-                    if country_code_col in base_admin1_gdf.columns:
-                        neighbors_l1_gdf = base_admin1_gdf[base_admin1_gdf[country_code_col].isin(neighbor_codes)]
-                        logger.info(f"Found {len(neighbors_l1_gdf)} potential neighboring level 1 features.")
-
-                        if not neighbors_l1_gdf.empty:
-                            # Reproject and clip neighbors_l1_gdf as before
-                            neighbors_l1_plot_gdf = neighbors_l1_gdf.copy()
-                            if target_crs:
-                                # ... (reprojection logic as before) ...
-                                try:
-                                    neighbor_original_crs = neighbors_l1_plot_gdf.crs
-                                    if not neighbor_original_crs:
-                                        neighbor_original_crs = original_crs if original_crs else 'EPSG:4326'
-                                        neighbors_l1_plot_gdf.set_crs(neighbor_original_crs, inplace=True)
-                                    neighbors_l1_plot_gdf = neighbors_l1_plot_gdf.to_crs(target_crs)
-                                except Exception as neighbor_reproj_err:
-                                    logger.error(f"Failed to reproject neighbors_l1_gdf: {neighbor_reproj_err}", exc_info=True)
-                                    neighbors_l1_plot_gdf = neighbors_l1_gdf
-
-                            current_xlim = ax.get_xlim()
-                            current_ylim = ax.get_ylim()
-                            try:
-                                # ... (clipping logic as before) ...
-                                if neighbors_l1_plot_gdf.crs and neighbors_l1_plot_gdf.crs.is_projected:
-                                     bbox_poly = Polygon([(current_xlim[0], current_ylim[0]), (current_xlim[1], current_ylim[0]), (current_xlim[1], current_ylim[1]), (current_xlim[0], current_ylim[1])])
-                                     clip_box = gpd.GeoDataFrame([1], geometry=[bbox_poly], crs=neighbors_l1_plot_gdf.crs)
-                                     neighbors_l1_plot_gdf = gpd.clip(neighbors_l1_plot_gdf, clip_box)
-                                else:
-                                     neighbors_l1_plot_gdf = neighbors_l1_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
-                            except Exception as clip_err:
-                                 logger.warning(f"Could not clip L1 neighbors to map extent: {clip_err}")
-
-                            if not neighbors_l1_plot_gdf.empty:
-                                neighbors_l1_plot_gdf.plot(
-                                    ax=ax,
-                                    color=style_config.get('neighbor_l1_fill_color', 'none'),
-                                    edgecolor=style_config.get('neighbor_l1_edgecolor', 'grey'),
-                                    linewidth=style_config.get('neighbor_l1_linewidth', 0.5),
-                                    linestyle=style_config.get('neighbor_l1_linestyle', '--'),
-                                    zorder=1
-                                )
-                            else:
-                                logger.info("No neighboring L1 regions fall within the current map extent after clipping.")
-                    else:
-                         logger.warning(f"Cannot plot L1 neighbors: Country code column '{country_code_col}' not found in base layer.")
+                if country_code_col not in all_admin1_gdf.columns:
+                     logger.warning(f"Cannot filter out primary country L1 regions: Column '{country_code_col}' not found in admin1_10m layer.")
+                     other_l1_gdf = all_admin1_gdf # Plot all if filtering fails
+                elif not primary_country_codes:
+                     logger.warning("No 'country_codes' defined in config; cannot exclude primary L1 regions.")
+                     other_l1_gdf = all_admin1_gdf # Plot all if primary codes unknown
                 else:
-                    logger.info("No neighboring country codes defined for L1 neighbors.")
+                    # Filter out the L1 regions belonging to the primary country/countries being plotted
+                    other_l1_gdf = all_admin1_gdf[~all_admin1_gdf[country_code_col].isin(primary_country_codes)]
+                    logger.info(f"Found {len(other_l1_gdf)} potential other level 1 features (excluding primary: {primary_country_codes}).")
+
+                if not other_l1_gdf.empty:
+                    # Reproject these other L1 regions if the main map was reprojected
+                    other_l1_plot_gdf = other_l1_gdf.copy()
+                    if target_crs:
+                        try:
+                            other_original_crs = other_l1_plot_gdf.crs
+                            if not other_original_crs:
+                                other_original_crs = original_crs if original_crs else 'EPSG:4326'
+                                other_l1_plot_gdf.set_crs(other_original_crs, inplace=True)
+                            other_l1_plot_gdf = other_l1_plot_gdf.to_crs(target_crs)
+                        except Exception as other_reproj_err:
+                            logger.error(f"Failed to reproject other_l1_gdf: {other_reproj_err}", exc_info=True)
+                            other_l1_plot_gdf = other_l1_gdf # Use original if reprojection fails
+
+                    # Get the final map extent *after* main data and lakes have been plotted
+                    current_xlim = ax.get_xlim()
+                    current_ylim = ax.get_ylim()
+
+                    # Clip the (potentially reprojected) other L1 regions to the map extent
+                    clipped_other_l1_plot_gdf = gpd.GeoDataFrame() # Initialize for plotting
+                    logger.debug(f"Attempting to clip other L1 regions. Data CRS: {other_l1_plot_gdf.crs}. Bounds: xlim={current_xlim}, ylim={current_ylim}")
+                    try:
+                        if other_l1_plot_gdf.crs and other_l1_plot_gdf.crs.is_projected:
+                             logger.debug("Using projected CRS clipping method (gpd.clip).")
+                             bbox_poly = Polygon([(current_xlim[0], current_ylim[0]), (current_xlim[1], current_ylim[0]), (current_xlim[1], current_ylim[1]), (current_xlim[0], current_ylim[1])])
+                             # Ensure the clip box has the same CRS as the data being clipped
+                             clip_box = gpd.GeoDataFrame([1], geometry=[bbox_poly], crs=other_l1_plot_gdf.crs)
+                             logger.debug(f"Clip box created with CRS: {clip_box.crs}")
+                             clipped_other_l1_plot_gdf = gpd.clip(other_l1_plot_gdf, clip_box)
+                        else:
+                             logger.debug("Using geographic CRS clipping method (.cx).")
+                             # Use cx for geographic coordinates
+                             clipped_other_l1_plot_gdf = other_l1_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
+                        logger.info(f"Clipping other L1 regions to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(other_l1_gdf)}, after clip: {len(clipped_other_l1_plot_gdf)}") # Keep this info log
+                    except Exception as clip_err:
+                         logger.warning(f"Could not clip other L1 regions to map extent: {clip_err}")
+                         clipped_other_l1_plot_gdf = other_l1_plot_gdf # Attempt to plot unclipped if clipping fails
+
+                    # Plot the clipped regions
+                    if not clipped_other_l1_plot_gdf.empty:
+                        clipped_other_l1_plot_gdf.plot(
+                            ax=ax,
+                            color=style_config.get('neighbor_l1_fill_color', 'none'), # Use 'neighbor' styling
+                            edgecolor=style_config.get('neighbor_l1_edgecolor', 'grey'),
+                            linewidth=style_config.get('neighbor_l1_linewidth', 0.5),
+                            linestyle=style_config.get('neighbor_l1_linestyle', '--'),
+                            zorder=1 # Plot below main data but above countries
+                        )
+                        logger.info(f"Plotted {len(clipped_other_l1_plot_gdf)} other L1 regions within bounds.")
+                    else:
+                        logger.info("No other L1 regions fall within the current map extent after clipping.")
+                else:
+                     logger.info("No other L1 regions found after excluding primary country/countries.")
 
             except Exception as e:
-                logger.error(f"Failed to load or plot neighboring L1 regions: {e}", exc_info=True)
+                logger.error(f"Failed to load or plot other L1 regions: {e}", exc_info=True)
 
         # --- Plot Neighboring Countries (if configured) ---
         if main_map_config.get('include_neighboring_countries', False):
@@ -541,11 +665,15 @@ class ChoroplethPlotter:
                 admin0_country_code_col = self.plot_config.get('data_hints', {}).get('admin0_country_code_column', 'ADM0_A3')
 
                 if neighbor_codes:
-                    # Fetch the admin 0 (countries) layer
-                    # Ensure 'world_countries' key exists in GEOGRAPHY_LAYERS
-                    if 'world_countries' in GEOGRAPHY_LAYERS:
-                        base_countries_gdf = self.geo_manager.get_geodataframe(geography_key='world_countries')
+                    # Use specific layer name for countries
+                    base_countries_gdf = None # Initialize
+                    try:
+                        base_countries_gdf = self.geo_manager.get_geodataframe(layer_name='ne_50m_admin_0_countries')
+                    except (ValueError, FileNotFoundError, RuntimeError) as e:
+                         logger.error(f"Failed to load world countries layer 'ne_50m_admin_0_countries': {e}", exc_info=True)
+                         # base_countries_gdf remains None
 
+                    if base_countries_gdf is not None:
                         if admin0_country_code_col in base_countries_gdf.columns:
                             neighbor_countries_gdf = base_countries_gdf[base_countries_gdf[admin0_country_code_col].isin(neighbor_codes)]
                             logger.info(f"Found {len(neighbor_countries_gdf)} potential neighboring country features.")
@@ -565,33 +693,42 @@ class ChoroplethPlotter:
                                         logger.error(f"Failed to reproject neighbor_countries_gdf: {nc_reproj_err}", exc_info=True)
                                         neighbor_countries_plot_gdf = neighbor_countries_gdf
 
+                                # Get final map extent *after* main data, lakes, other L1 plotted
                                 current_xlim = ax.get_xlim()
                                 current_ylim = ax.get_ylim()
+                                clipped_neighbor_countries_plot_gdf = gpd.GeoDataFrame() # Initialize for plotting
+                                logger.debug(f"Attempting to clip neighbor countries. Data CRS: {neighbor_countries_plot_gdf.crs}. Bounds: xlim={current_xlim}, ylim={current_ylim}")
                                 try:
-                                    # ... (clipping logic) ...
+                                    # Clip neighbor countries to map extent
                                     if neighbor_countries_plot_gdf.crs and neighbor_countries_plot_gdf.crs.is_projected:
+                                         logger.debug("Using projected CRS clipping method (gpd.clip) for countries.")
                                          bbox_poly = Polygon([(current_xlim[0], current_ylim[0]), (current_xlim[1], current_ylim[0]), (current_xlim[1], current_ylim[1]), (current_xlim[0], current_ylim[1])])
                                          clip_box = gpd.GeoDataFrame([1], geometry=[bbox_poly], crs=neighbor_countries_plot_gdf.crs)
-                                         neighbor_countries_plot_gdf = gpd.clip(neighbor_countries_plot_gdf, clip_box)
+                                         logger.debug(f"Clip box created with CRS: {clip_box.crs}")
+                                         clipped_neighbor_countries_plot_gdf = gpd.clip(neighbor_countries_plot_gdf, clip_box)
                                     else:
-                                         neighbor_countries_plot_gdf = neighbor_countries_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
+                                         logger.debug("Using geographic CRS clipping method (.cx) for countries.")
+                                         clipped_neighbor_countries_plot_gdf = neighbor_countries_plot_gdf.cx[current_xlim[0]:current_xlim[1], current_ylim[0]:current_ylim[1]]
+                                    logger.info(f"Clipping neighbor countries to map bounds: xlim={current_xlim}, ylim={current_ylim}. Features before clip: {len(neighbor_countries_gdf)}, after clip: {len(clipped_neighbor_countries_plot_gdf)}") # Keep this info log
                                 except Exception as nc_clip_err:
                                      logger.warning(f"Could not clip neighbor countries to map extent: {nc_clip_err}")
+                                     clipped_neighbor_countries_plot_gdf = neighbor_countries_plot_gdf # Attempt to plot unclipped
 
-                                if not neighbor_countries_plot_gdf.empty:
-                                    neighbor_countries_plot_gdf.plot(
+                                if not clipped_neighbor_countries_plot_gdf.empty:
+                                    clipped_neighbor_countries_plot_gdf.plot(
                                         ax=ax,
                                         color=style_config.get('country_color', 'lightgrey'), # Use country styling
                                         edgecolor=style_config.get('country_edge_color', 'darkgrey'),
                                         linewidth=style_config.get('country_linewidth', 0.5),
                                         zorder=0 # Plot underneath everything else
                                     )
+                                    logger.info(f"Plotted {len(clipped_neighbor_countries_plot_gdf)} neighboring countries within bounds.")
                                 else:
                                      logger.info("No neighboring countries fall within the current map extent after clipping.")
                         else:
                              logger.warning(f"Cannot plot neighbor countries: Country code column '{admin0_country_code_col}' not found in countries layer.")
-                    else:
-                         logger.warning("Cannot plot neighbor countries: 'world_countries' key not defined in GEOGRAPHY_LAYERS.")
+                    else: # Handle case where base_countries_gdf failed to load or was None initially
+                         logger.warning("Skipping neighbor countries plot as the base layer failed to load.")
                 else:
                      logger.info("No neighboring country codes defined in config, skipping neighbor country plot.")
              except Exception as e:
@@ -655,8 +792,12 @@ class ChoroplethPlotter:
                               linewidth=style_config.get('lake_linewidth', 0.3),
                               zorder=2
                           )
-            except Exception as e:
-                 logger.error(f"Failed to create or plot inset for codes {codes}: {e}", exc_info=True)
+                # --- Add Labels to Inset using the dedicated function ---
+                if label_config.get('add_labels', False) and level1_code_col:
+                    self._add_inset_labels(inset_data, ax_inset, label_config, level1_code_col)
+
+            except Exception as e: # This except corresponds to the try starting at line 755
+                logger.error(f"Failed to create or plot inset for codes {codes}: {e}", exc_info=True)
 
 
         # --- Add Labels (Call the helper method) ---
@@ -678,14 +819,19 @@ class ChoroplethPlotter:
             else:
                  logger.warning("GeoDataFrame for labeling is empty after filtering; skipping labeling.")
 
-        # TODO: Add logic to call _add_labels for inset_data on ax_inset if needed
 
         # --- Final Touches ---
-        if 'tight_layout_rect' in fig_config:
-             try:
-                 fig.tight_layout(rect=fig_config['tight_layout_rect'])
-             except Exception as e:
-                  logger.warning(f"Failed to apply tight_layout: {e}")
+        # Apply tight_layout with rect from configuration if available
+        try:
+            tight_layout_rect = fig_config.get('tight_layout_rect')
+            if tight_layout_rect:
+                logger.info(f"Applying tight_layout with rect: {tight_layout_rect}")
+                fig.tight_layout(rect=tight_layout_rect)
+            else:
+                logger.info("Applying default tight_layout")
+                fig.tight_layout()
+        except Exception as e:
+            logger.warning(f"Failed to apply tight_layout: {e}")
 
         logger.info("Plot generation complete.")
         return fig, ax
