@@ -12,3 +12,21 @@ build/
 # Ignore the .roomodes file
 .roomodes
 *.egg-info/
+
+# Distribution / packaging
+*.tar.gz
+*.whl
+dist/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / Editor specific
+.vscode/
+.idea/

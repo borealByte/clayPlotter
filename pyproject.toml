@@ -7,14 +7,14 @@ name = "clayPlotter"
 version = "0.1.0" # Initial version
 description = "A Python package for creating configurable choropleth maps."
 authors = [
-    { name = "Clay", email = "clay@example.com" }, # Replace with actual author info if available
+    { name = "Clay", email = "claytoneyoung+clayPlotter@gmail.com" },
 ]
 readme = "README.md" # Assuming a README will be created later
-license = { file = "LICENSE" }
+license = { text = "MIT" } # Use SPDX identifier
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License", # Assuming MIT based on LICENSE file presence
+    # "License :: OSI Approved :: MIT License", # Removed, covered by license field
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -33,8 +33,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
-Repository = "https://github.com/yourusername/clayPlotter" # Replace with actual URL
+Homepage = "https://github.com/borealByte/clayPlotter"
+Repository = "https://github.com/borealByte/clayPlotter"
 
 [project.optional-dependencies]
 dev = [
@@ -42,6 +42,7 @@ dev = [
     "nbconvert>=7.0.0",
     "pytest>=7.0.0", # Also include pytest here for consistency
     "build>=0.10.0", # And build
+    "twine>=4.0.0", # For uploading to PyPI
 ]
 
 # Optional: Configure uv tool settings if needed

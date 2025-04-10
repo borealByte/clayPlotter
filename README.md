@@ -5,6 +5,39 @@
 
 Welcome to `clayPlotter`! 👋 This project is a modern, installable Python package 📦 for creating beautiful choropleth maps 🎨. It efficiently downloads geospatial data once and caches it for future use, making it easy to generate maps for different regions.
 
+## 💾 Installation
+
+You can install `clayPlotter` directly from PyPI:
+
+```bash
+pip install clayPlotter
+```
+
+<details>
+<summary>✨ Watch the install magic! ✨</summary>
+
+```
+$ pip install clayPlotter
+Collecting clayPlotter
+  Downloading clayPlotter-0.1.0-py3-none-any.whl (12 kB)
+Collecting geopandas>=0.10.0
+  Downloading geopandas-0.14.4-py3-none-any.whl (1.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 5.3 MB/s eta 0:00:00
+Collecting matplotlib>=3.3.0
+  Downloading matplotlib-3.8.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (11.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.6/11.6 MB 15.1 MB/s eta 0:00:00
+Collecting pandas>=1.1.0
+  Downloading pandas-2.2.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.0 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.0/13.0 MB 18.8 MB/s eta 0:00:00
+... (dependencies installation) ...
+Successfully installed clayPlotter-0.1.0 geopandas-0.14.4 matplotlib-3.8.4 pandas-2.2.2 ...
+```
+</details>
+
+Find the project on:
+*   **PyPI:** [https://pypi.org/project/clayPlotter/0.1.0/](https://pypi.org/project/clayPlotter/0.1.0/)
+*   **GitHub:** [https://github.com/borealBytes/clayPlotter](https://github.com/borealBytes/clayPlotter)
+
 ## ✨ How it Works
 
 `clayPlotter` uses a robust data loading mechanism to download geospatial data for various regions. The data is cached locally, so subsequent runs are much faster. The package is designed to be easy to use, with a simple API for generating choropleth maps.
@@ -180,7 +213,6 @@ plt.show()
 
 ## 🔮 Future Plans
 
-* Publishing to PyPI for easy installation.
 * Adding more advanced documentation.
 * Exploring new features!
 
