@@ -63,4 +63,4 @@ major_version_zero = true # Allows 0.x.y versions
 
 [tool.setuptools.package-data]
 # Include YAML files from the resources directory within the package
-clayPlotter = ["resources/*.yaml"]
+clayPlotter = ["resources/*.yaml"]          
