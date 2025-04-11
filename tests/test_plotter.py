@@ -7,9 +7,9 @@ from matplotlib.axes import Axes  # For type checking plot output
 import matplotlib.pyplot as plt # Import needed for patching
 
 # Import the actual classes
-from clayPlotter.plotter import ChoroplethPlotter
-from clayPlotter.geo_data_manager import GeoDataManager
-from clayPlotter.data_loader import DataLoader # Although not directly used in plotter init, keep for potential future tests or spec
+from clayPlotter.l1_choropleth.plotter import ChoroplethPlotter
+from clayPlotter.l1_choropleth.geo_data_manager import GeoDataManager
+from clayPlotter.l1_choropleth.data_loader import DataLoader # Although not directly used in plotter init, keep for potential future tests or spec
 # --- Fixtures ---
 
 @pytest.fixture

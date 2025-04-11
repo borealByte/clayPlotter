@@ -1,0 +1,1 @@
+# tests/mcp/__init__.py
