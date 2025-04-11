@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "clayplotter-mcp": {
+      "command": "python",
+      "args": ["-m", "src.clayPlotter.mcp.main"],
+      "workingDir": "/home/clay/dev/clayPlotter",
+      "env": {},
+      "alwaysAllow": ["generate_map", "list_geographies"],
+      "disabled": false
+    }
+  }
+}

@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 
 # Assuming the class will be in src/clayPlotter/geo_data_manager.py
 # We'll need to create this file later in the implementation step.
-from clayPlotter.geo_data_manager import GeoDataManager # Assuming this path
+from clayPlotter.l1_choropleth.geo_data_manager import GeoDataManager
 
 # Placeholder for where data might be cached
 TEST_CACHE_DIR = Path("./test_cache")

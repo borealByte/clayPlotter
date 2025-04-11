@@ -1,0 +1,24 @@
+# Core plotting library dependencies
+pandas
+geopandas
+matplotlib
+pyyaml
+requests
+shapely
+
+# MCP Server dependencies
+mcp_server # The library for the MCP server itself
+fastapi
+uvicorn[standard] # Includes standard ASGI server features
+pydantic
+pydantic-settings
+# No need for mcp_server as a dependency since we're building it into clayPlotter
+
+# Note: clayPlotter itself is not listed here as this file
+# is typically used to install dependencies *for* the package,
+# not the package itself during development installation.
+
+# Testing dependencies
+pytest
+pytest-asyncio # For testing async FastAPI code if needed
+importlib-resources; python_version < '3.9' # Backport for older Python versions
